@@ -1,0 +1,26 @@
+$light-blue: #357edd;
+$link-color: $light-blue;
+
+a {
+  text-decoration: none;
+}
+
+article a, .summary a {
+  color: $link-color;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  & a {
+    color: inherit;
+  }
+}
+
+header a {
+  color: inherit;
+}
+
+article {
+  pre {
+    overflow: auto;
+  }
+}

@@ -1,0 +1,23 @@
+{% extends "index.html" %}
+
+{% block title %}{{ config.title }} - {{ page.title }}{% endblock title %}
+
+{% block extra_head %}
+<meta name="description" content="{{ page.description }}" />
+{% endblock extra_head %}
+
+{% block content %}
+<article>
+  <div class="cf">
+    <h1 class="orange lh-title fl w-100 w-80-ns">
+      <a href="{{ page.permalink }}" class="link hover-black">
+        {{ page.title }}
+      </a>
+    </h1>
+    <time class="fl mt4-ns w-100 w-20-ns tr"><small>{{ page.date | date(format="%d/%m/%Y") }}</small></time>
+  </div>
+  <div class="lh-copy">
+    {{ page.content | safe }}
+  </div>
+</article>
+{% endblock content %}
