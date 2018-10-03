@@ -32,6 +32,7 @@
 
     <div class="center w-60-ns pa3">
       {% block content %}
+      {% set section = get_section(path="blog/_index.md") %}
       <div class="posts">
         {% for page in section.pages %}
         <div>
