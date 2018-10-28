@@ -1,4 +1,5 @@
 $light-blue: #357edd;
+$orange: #ff6300;
 $link-color: $light-blue;
 
 a {
@@ -22,5 +23,19 @@ header a {
 article {
   pre {
     overflow: auto;
+  }
+  code {
+    background-color: #cccccc;
+  }
+  blockquote {
+    border-left-style: solid;
+    border-color: $orange;
+    border-width: .25rem;
+    font-family: athelas, georgia, serif;
+    margin-left: 0;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, .9);
+    padding-left: 2rem;
+    font-size: 1rem;
   }
 }
