@@ -61,6 +61,9 @@
           <div class="summary lh-copy">
             {{ page.summary | safe }}
           </div>
+          {% if page.summary %}
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="{{page.permalink}}">Lire la suite</a>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
