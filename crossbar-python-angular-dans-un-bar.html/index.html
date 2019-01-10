@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - C&#x27;est crossbar, python et angular qui rentrent dans un bar...</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="Ou comment résoudre un problème de concurrence avec une application web basée sur crossbar, python et angular." />
+
+    <script>
+      (function(f, a, t, h, o, m){
+        a[h]=a[h]||function(){
+          (a[h].q=a[h].q||[]).push(arguments)
+        };
+        o=f.createElement('script'),
+          m=f.getElementsByTagName('script')[0];
+        o.async=1; o.src=t; o.id='fathom-script';
+        m.parentNode.insertBefore(o,m)
+      })(document, window, '//stats.lowsamplingrate.eu/tracker.js', 'fathom');
+      fathom('set', 'siteId', 'BHLKS');
+      fathom('trackPageview');
+    </script>
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-60-ns pa3">
+      
+<article>
+  <div class="cf">
+    <h1 class="orange lh-title fl w-100 w-80-ns">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;" class="link hover-black">
+        C&#x27;est crossbar, python et angular qui rentrent dans un bar...
+      </a>
+    </h1>
+    <time class="fl mt4-ns w-100 w-20-ns tr"><small>09/08/2015</small></time>
+  </div>
+  <div class="lh-copy">
+    <p>Depuis que la société où je travaille a déménagé, il y a quelques
+semaines de ça, mes collègues et moi sommes confrontés à un problème
+majeur: les toilettes sont sur le palier. Le problème avec cette
+topologie, c'est qu'il est impossible de savoir à l'avance si les
+chiottes sont libres ou pas. On se retrouve donc souvent devant une
+porte fermée, dans l'impossibilité d'assouvir nos besoins les plus
+naturels.</p>
+<p>C'est dans ces moments-là que les plus bas instincts se réveillent et
+nous poussent à commettre les pires attrocités. Il est bien connu que
+l'Homme est un loup pour l'Homme. Ainsi, dans le but de maintenir une
+atmosphère conviviale et détendue, il est nécessaire de trouver une
+solution.</p>
+<p><a name="continue-reading"></a></p>
+<p><img src="https://media.giphy.com/media/1WQLKmc1Gfhny/giphy.gif" alt="My turn." /></p>
+<p>En attendant un système de supervision des chiottes en temps réel (on y
+travaille, à base d'<a href="https://www.arduino.cc/">Arduino</a>), un système de
+<em>verrou</em> fera l'affaire.</p>
+<p>L'idée est la suivante: un serveur central gère l'état de la
+ressource, les participants peuvent la verrouiller ou la libérer. Oui
+c'est une mutex IRL. Ou un bâton de parole. Mais pour les chiottes.</p>
+<p>Une petite application comme celle-ci me semble un bon prétexte pour
+jouer un peu avec <a href="http://crossbar.io/">crossbar</a> et
+<a href="https://angular.io/">angular</a>.</p>
+<p><a href="https://angular.io/">Angular</a>, c'est un framework MVC javascript
+développé par Google. <a href="http://crossbar.io/">Crossbar</a>, c'est un routeur
+<a href="http://wamp.ws/">WAMP</a> (Web Application Messaging Protocol). En gros ça
+permet de faire causer plein de composants hétérogènes ensemble. C'est
+assez puissant, ça permet de faire du Pub/Sub et du RPC super
+facilement. Pour plus de détails, je vous invite à lire l'<a href="http://sametmax.com/crossbar-le-futur-des-applications-web-python/">explication
+de
+Sam</a>.</p>
+<h2 id="le-plan">Le plan</h2>
+<p>J'imagine bien une petite application web avec un gros bouton &quot;Je vais
+aux chiottes&quot; qui se transforme en &quot;J'ai fini!&quot; au clic. Bien sûr
+l'idée c'est de partager avec tout le monde (anonymement) l'état de
+la ressource histoire de ne pas se retrouver devant une <a href="https://fr.wikipedia.org/wiki/Situation_de_comp%C3%A9tition">race
+condition</a>.</p>
+<p>Pour éviter les abus, seul le participant ayant verrouillé la ressource
+peut la déverrouiller. On identifiera les participants par un uuid
+généré par le backend.</p>
+<p>Sur le plan technique, on va s'appuyer sur les technologies suivantes:</p>
+<ul>
+<li><a href="http://crossbar.io/">crossbar</a> comme routeur
+<a href="http://wamp.ws/">WAMP</a></li>
+<li><a href="https://www.python.org/">python</a> dans sa version 3 comme langage
+serveur</li>
+<li><a href="https://angular.io/">angular</a> premier du nom pour la partie
+frontend</li>
+</ul>
+<h2 id="backend">Backend</h2>
+<h3 id="crossbar">Crossbar</h3>
+<p><a href="http://autobahn.ws/">Autobahn</a> (la lib pour causer
+<a href="http://wamp.ws/">WAMP</a>) est compatible python3, mais
+<a href="http://crossbar.io/">crossbar</a>, le routeur ne l'est pas encore. Du
+coup on va se créer deux environnements virtuels pour bosser: un pour
+crossbar et un pour notre backend.</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">virtualenv backend_env
+</span><span style="color:#f8f8f2;">virtualenv crossbar_env</span><span style="font-style:italic;color:#fd971f;"> -p</span><span style="color:#f8f8f2;"> python2
+</span></pre>
+<p>Avec <em>crossbar_env</em>, on bootstrap crossbar:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">crossbar init
+</span></pre>
+<p>Par la suite, dès qu'on touchera à crossbar, on le fera avec
+<em>crossbar_env</em>.</p>
+<p>On va tout de suite configurer crossbar, ça sera fait. Tout se passe
+dans le fichier <em>.crossbar/config.json</em> qui a normalement du être créé
+lors de notre crossbar init:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">   </span><span style="color:#e6db74;">&quot;controller&quot;</span><span style="color:#f8f8f2;">: {
+</span><span style="color:#f8f8f2;">   </span><span style="color:#f8f8f2;">},
+</span><span style="color:#f8f8f2;">   </span><span style="color:#e6db74;">&quot;workers&quot;</span><span style="color:#f8f8f2;">: [
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">         </span><span style="color:#e6db74;">&quot;type&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;router&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">         </span><span style="color:#e6db74;">&quot;realms&quot;</span><span style="color:#f8f8f2;">: [
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">               </span><span style="color:#e6db74;">&quot;name&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;lockr&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">               </span><span style="color:#e6db74;">&quot;roles&quot;</span><span style="color:#f8f8f2;">: [
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">                     </span><span style="color:#e6db74;">&quot;name&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;anonymous&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                     </span><span style="color:#e6db74;">&quot;permissions&quot;</span><span style="color:#f8f8f2;">: [
+</span><span style="color:#f8f8f2;">                        </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">                           </span><span style="color:#e6db74;">&quot;uri&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;*&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                           </span><span style="color:#e6db74;">&quot;publish&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                           </span><span style="color:#e6db74;">&quot;subscribe&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                           </span><span style="color:#e6db74;">&quot;call&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                           </span><span style="color:#e6db74;">&quot;register&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#ae81ff;">true
+</span><span style="color:#f8f8f2;">                        </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">                     </span><span style="color:#f8f8f2;">]
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">               </span><span style="color:#f8f8f2;">]
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">         </span><span style="color:#f8f8f2;">],
+</span><span style="color:#f8f8f2;">         </span><span style="color:#e6db74;">&quot;transports&quot;</span><span style="color:#f8f8f2;">: [
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">               </span><span style="color:#e6db74;">&quot;type&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;web&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">               </span><span style="color:#e6db74;">&quot;endpoint&quot;</span><span style="color:#f8f8f2;">: {
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#e6db74;">&quot;type&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;tcp&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#e6db74;">&quot;port&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#ae81ff;">8080
+</span><span style="color:#f8f8f2;">               </span><span style="color:#f8f8f2;">},
+</span><span style="color:#f8f8f2;">               </span><span style="color:#e6db74;">&quot;paths&quot;</span><span style="color:#f8f8f2;">: {
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#e6db74;">&quot;/&quot;</span><span style="color:#f8f8f2;">: {
+</span><span style="color:#f8f8f2;">                     </span><span style="color:#e6db74;">&quot;type&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;static&quot;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">                     </span><span style="color:#e6db74;">&quot;directory&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;../web&quot;
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#f8f8f2;">},
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#e6db74;">&quot;ws&quot;</span><span style="color:#f8f8f2;">: {
+</span><span style="color:#f8f8f2;">                     </span><span style="color:#e6db74;">&quot;type&quot;</span><span style="color:#f8f8f2;">: </span><span style="color:#e6db74;">&quot;websocket&quot;
+</span><span style="color:#f8f8f2;">                  </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">               </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">         </span><span style="color:#f8f8f2;">]
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">   </span><span style="color:#f8f8f2;">]
+</span><span style="color:#f8f8f2;">}
+</span></pre>
+<p>Le <em>realm</em> défini ligne 9 représente le contexte de notre application.
+Il est tout à fait possible d'avoir plusieurs <em>realms</em> sur un même
+serveur, tout en garantissant un cloisonnement entre les contextes
+puisque crossbar ne routera les messages qu'au sein du même <em>realm</em>.</p>
+<p>On définit un transport web sur le port 8080 et on demande à crossbar de
+servir le contenu du répertoire <em>web</em> (ligne 34). C'est là qu'on
+mettra notre app <a href="https://angular.io/">angular</a>.</p>
+<p>On informe crossbar qu'on veut faire du websocket sur /ws (ligne 38).
+C'est par là que nos composants vont communiquer.</p>
+<h3 id="serveur">Serveur</h3>
+<p>J'emploie le terme <em>serveur</em> depuis le début mais ce n'est pas
+complètement approprié. <a href="http://crossbar.io/">Crossbar</a> ne fait pas de
+distinction entre serveur et client, pour lui il n'y a que des
+composants qui causent entre eux. Du coup à partir de maintenant on
+appellera le composant gardien de la ressource <em>SeatComponent</em>.</p>
+<p>Avec <em>backend_env</em>, on install la lib autobahn. On précise qu'on veut
+bosser avec asyncio mais il est également possible de jouer avec twisted
+(cf <a href="http://autobahn.ws/python/installation.html#installing-autobahn">la
+doc</a>):</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">pip install </span><span style="color:#e6db74;">&quot;autobahn[asyncio]&quot;
+</span></pre>
+<p>Il ne nous reste plus qu'à écrire notre composant <em>SeatComponent</em>. Rien
+de bien compliqué, on va conserver l'état de la ressource sous forme de
+booléen: vrai si c'est libre, faux sinon. Il nous faut également
+conserver l'identifiant du composant ayant verrouillé la ressource,
+pour que lui seul puisse la libérer.</p>
+<p>On va exposer des méthodes en RPC:</p>
+<ul>
+<li>lock(id_du_client): pour demander à verrouiller la ressource</li>
+<li>unlock(id_du_client): pour faire le contraire</li>
+<li>get_id(): pour demander un identifiant</li>
+<li>refresh(): pour réémettre l'état de la ressource. On en aura besoin
+quand un nouveau front web se connectera ou que l'état de la
+ressource changera.</li>
+</ul>
+<p>Émettre l'état de la ressource ça veut dire publier des messages. On
+aura deux messages: <strong>locked</strong> et <strong>unlocked</strong>.</p>
+<p>En s'appuyant sur la <a href="http://autobahn.ws/python/wamp/programming.html#registering-procedures">doc
+autobahn</a>,
+notre composant ressemble à ça:</p>
+<pre style="background-color:#272822;">
+<span style="color:#75715e;">#!/usr/bin/env python
+</span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">asyncio </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">coroutine
+</span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">autobahn.asyncio.wamp </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">ApplicationSession, ApplicationRunner
+</span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">uuid
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">
+</span><span style="font-style:italic;color:#66d9ef;">class </span><span style="text-decoration:underline;color:#a6e22e;">SeatComponent</span><span style="color:#f8f8f2;">(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">ApplicationSession</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">_free </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">True
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">_locker_id </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;&quot;
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">get_id</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">        </span><span style="color:#75715e;">&quot;&quot;&quot;Get unique identifier&quot;&quot;&quot;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">return </span><span style="font-style:italic;color:#66d9ef;">str</span><span style="color:#f8f8f2;">(uuid.uuid4())
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">refresh</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">        </span><span style="color:#75715e;">&quot;&quot;&quot;Send lock/unlock events according to current seat state&quot;&quot;&quot;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">self._free:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self.publish(</span><span style="color:#e6db74;">&#39;lockr.seat.unlocked&#39;</span><span style="color:#f8f8f2;">, self._locker_id)
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">else</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self.publish(</span><span style="color:#e6db74;">&#39;lockr.seat.locked&#39;</span><span style="color:#f8f8f2;">, self._locker_id)
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">lock</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">client</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">        </span><span style="color:#75715e;">&quot;&quot;&quot;Lock the resource
+</span><span style="color:#75715e;">
+</span><span style="color:#75715e;">        </span><span style="color:#75715e;">Returns True if successfully locked, False otherwise
+</span><span style="color:#75715e;">        </span><span style="color:#75715e;">&quot;&quot;&quot;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">if not </span><span style="color:#f8f8f2;">self._free:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">False
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">else</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self._locker_id </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">client
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self._free </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">False
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self.refresh()
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">True
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">unlock</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">client</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">        </span><span style="color:#75715e;">&quot;&quot;&quot;Release the resource
+</span><span style="color:#75715e;">
+</span><span style="color:#75715e;">        </span><span style="color:#75715e;">Returns True if successfully released, False otherwise
+</span><span style="color:#75715e;">        </span><span style="color:#75715e;">&quot;&quot;&quot;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">if not </span><span style="color:#f8f8f2;">self._free </span><span style="color:#f92672;">and </span><span style="color:#f8f8f2;">client </span><span style="color:#f92672;">== </span><span style="color:#f8f8f2;">self._locker_id:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self._free </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">True
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">self.refresh()
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">True
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">else</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">False
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">@coroutine
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">onJoin</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">details</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">try</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">yield from </span><span style="color:#f8f8f2;">self.register(self.get_id, </span><span style="color:#e6db74;">&#39;lockr.seat.get_id&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">yield from </span><span style="color:#f8f8f2;">self.register(self.lock, </span><span style="color:#e6db74;">&#39;lockr.seat.lock&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">yield from </span><span style="color:#f8f8f2;">self.register(self.unlock, </span><span style="color:#e6db74;">&#39;lockr.seat.unlock&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f92672;">yield from </span><span style="color:#f8f8f2;">self.subscribe(self.refresh, </span><span style="color:#e6db74;">&#39;lockr.seat.refresh&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">except </span><span style="font-style:italic;color:#66d9ef;">Exception </span><span style="color:#f92672;">as </span><span style="color:#f8f8f2;">e:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#66d9ef;">print</span><span style="color:#f8f8f2;">(</span><span style="color:#e6db74;">&quot;Register error: </span><span style="color:#ae81ff;">{}</span><span style="color:#e6db74;">&quot;</span><span style="color:#f8f8f2;">.format(e))
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">__name__ </span><span style="color:#f92672;">== </span><span style="color:#e6db74;">&#39;__main__&#39;</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">runner </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">ApplicationRunner(</span><span style="font-style:italic;color:#fd971f;">url</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;ws://localhost:8080/ws&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">realm</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;lockr&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">runner.run(SeatComponent)
+</span></pre>
+<p>Qu'est-ce qu'on a fait ici? On a défini notre composant
+<em>SeatComponent</em>, muni de méthodes pour agir sur la ressource. Ces
+méthodes sont exposées en RPC dans la méthode appelée lors de la
+connexion à crossbar (le <em>onJoin</em>): via la méthode <strong>register</strong>.</p>
+<p>La souscription à un événement est similaire, on fait appel à
+<strong>subscribe</strong> en précisant l'événement et le handler. Ici c'est la
+méthode <em>refresh</em> qui sera appelée à la réception d'un événement
+'<em>lockr.seat.refresh</em>'.</p>
+<p>Le <em>runner</em> défini à l'avant-dernière ligne est configuré avec les
+éléments renseignés plus tôt dans la configuration de crossbar.</p>
+<p>On a maintenant notre composant, on peut le tester en vitesse pour
+vérifier qu'on ne s'est pas planté.</p>
+<p>Hop, hop, un petit composant de test:</p>
+<pre style="background-color:#272822;">
+<span style="color:#75715e;">#!/usr/bin/env python
+</span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">autobahn.asyncio.wamp </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">ApplicationSession, ApplicationRunner
+</span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">asyncio </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">coroutine
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">
+</span><span style="font-style:italic;color:#66d9ef;">class </span><span style="text-decoration:underline;color:#a6e22e;">TestComponent</span><span style="color:#f8f8f2;">(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">ApplicationSession</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">@coroutine
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">onJoin</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">details</span><span style="color:#f8f8f2;">):
+</span><span style="color:#f8f8f2;">        </span><span style="color:#66d9ef;">print</span><span style="color:#f8f8f2;">(</span><span style="color:#e6db74;">&quot;session ready&quot;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">try</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">res </span><span style="color:#f92672;">= yield from </span><span style="color:#f8f8f2;">self.call(</span><span style="color:#e6db74;">&#39;lockr.seat.get_id&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">            </span><span style="color:#66d9ef;">print</span><span style="color:#f8f8f2;">(</span><span style="color:#e6db74;">&quot;call result: </span><span style="color:#ae81ff;">{}</span><span style="color:#e6db74;">&quot;</span><span style="color:#f8f8f2;">.format(res))
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f92672;">except </span><span style="font-style:italic;color:#66d9ef;">Exception </span><span style="color:#f92672;">as </span><span style="color:#f8f8f2;">e:
+</span><span style="color:#f8f8f2;">            </span><span style="color:#66d9ef;">print</span><span style="color:#f8f8f2;">(</span><span style="color:#e6db74;">&quot;call error: </span><span style="color:#ae81ff;">{0}</span><span style="color:#e6db74;">&quot;</span><span style="color:#f8f8f2;">.format(e))
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">__name__ </span><span style="color:#f92672;">== </span><span style="color:#e6db74;">&#39;__main__&#39;</span><span style="color:#f8f8f2;">:
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">runner </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">ApplicationRunner(</span><span style="font-style:italic;color:#fd971f;">url</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;ws://localhost:8080/ws&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">realm</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;lockr&#39;</span><span style="color:#f8f8f2;">)
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">runner.run(TestComponent)
+</span></pre>
+<p>Normalement en lançant le serveur et le test, on devrait obtenir un truc
+comme ça:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">session ready
+</span><span style="color:#f8f8f2;">call result: b654c12f-e036-418e-ae81-70be2b10258a
+</span></pre>
+<p>Comme sur des roulettes, on peut passer à la partie front pour afficher
+un joli bouton.</p>
+<h2 id="frontend">Frontend</h2>
+<p>Vous vous souvenez du répertoire <strong>web</strong> dont on avait parlé dans la
+conf crossbar? Ben c'est là-dedans qu'on va se mettre.</p>
+<p>Comme on est pas des gros sales, on va gérer nos dépendances avec
+<a href="http://bower.io/">bower</a>:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">bower init
+</span><span style="color:#f8f8f2;">bower install angular angular-wamp bootstrap --save
+</span></pre>
+<p>On installe donc <a href="https://angular.io/">angular</a>, angular-wamp et
+bootstrap. On pourrait utiliser directement autobahnjs, mais puisque
+<a href="https://github.com/voryx/angular-wamp">angular-wamp</a> nous offre un
+service pour faire du WAMP, pourquoi se priver?</p>
+<p>Bootstrap c'est pour faire un front hyper original. Pour afficher un
+bouton c'est bien nécessaire. Enfin il faut avouer que je suis une
+quiche en design...</p>
+<p>On se créer un <em>index.html</em> de base:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">&lt;!</span><span style="color:#f92672;">DOCTYPE</span><span style="color:#f8f8f2;"> html&gt;
+</span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">html </span><span style="color:#a6e22e;">lang</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;en&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">head</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">meta </span><span style="color:#a6e22e;">charset</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;UTF-8&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">meta </span><span style="color:#a6e22e;">http-equiv</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;X-UA-Compatible&quot; </span><span style="color:#a6e22e;">content</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;IE=edge&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">meta </span><span style="color:#a6e22e;">name</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;viewport&quot; </span><span style="color:#a6e22e;">content</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;width=device-width, initial-scale=1&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">title</span><span style="color:#f8f8f2;">&gt;Lockr&lt;/</span><span style="color:#f92672;">title</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">link </span><span style="color:#a6e22e;">href</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/bootstrap/dist/css/bootstrap.min.css&quot; </span><span style="color:#a6e22e;">rel</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;stylesheet&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">link </span><span style="color:#a6e22e;">href</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/bootstrap/dist/css/bootstrap-theme.min.css&quot; </span><span style="color:#a6e22e;">rel</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;stylesheet&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">link </span><span style="color:#a6e22e;">href</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;style.css&quot; </span><span style="color:#a6e22e;">rel</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;stylesheet&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">head</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">body</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/jquery/dist/jquery.min.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/bootstrap/dist/js/bootstrap.min.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/angular/angular.min.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/autobahn/autobahn.min.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;bower_components/angular-wamp/release/angular-wamp.min.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;app.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">body</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">html</span><span style="color:#f8f8f2;">&gt;
+</span></pre>
+<p>Outre les dépendances, on appelle <em>style.css</em> pour mettre le bouton en
+taille maxi et <em>app.js</em> qui contiendra notre appli angular.</p>
+<p>Déclarons notre application:</p>
+<pre style="background-color:#272822;">
+<span style="font-style:italic;color:#66d9ef;">var </span><span style="color:#f8f8f2;">app </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">angular.module(</span><span style="color:#e6db74;">&#39;LockrWebApp&#39;</span><span style="color:#f8f8f2;">, [</span><span style="color:#e6db74;">&#39;vxWamp&#39;</span><span style="color:#f8f8f2;">]);
+</span></pre>
+<p>Une unique dépendance: angular-wamp, qu'on s'empresse de configurer:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">app.config([</span><span style="color:#e6db74;">&#39;$wampProvider&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$wampProvider</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$wampProvider.init({
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">url: </span><span style="color:#e6db74;">&#39;ws://localhost:8080/ws&#39;</span><span style="color:#f8f8f2;">,
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">realm: </span><span style="color:#e6db74;">&#39;lockr&#39;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">});
+</span><span style="color:#f8f8f2;">}]);
+</span></pre>
+<p>On précise le realm et l'url qu'on avait configuré dans
+.crossbar/config.json.</p>
+<p>Reste plus qu'à écrire notre contrôleur:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">app.controller(</span><span style="color:#e6db74;">&#39;MainCtrl&#39;</span><span style="color:#f8f8f2;">, [</span><span style="color:#e6db74;">&#39;$scope&#39;</span><span style="color:#f8f8f2;">, </span><span style="color:#e6db74;">&#39;$wamp&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$scope</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">$wamp</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// C&#39;est l&#39;identifiant du client
+</span><span style="color:#f8f8f2;">  </span><span style="font-style:italic;color:#66d9ef;">var </span><span style="color:#f8f8f2;">uuid;
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// Le bouton est initialisé désactivé
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$scope.seat_state </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">false</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$scope.btn_msg </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;Wait for it...&quot;</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$scope.btn_disabled </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// En cas d&#39;erreur on désactive le bouton
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// et on affiche un message fort à propos
+</span><span style="color:#f8f8f2;">  </span><span style="font-style:italic;color:#66d9ef;">function </span><span style="color:#a6e22e;">handleError</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">err</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.error </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">err;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.btn_disabled </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.seat_state </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">false</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.btn_msg </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;Shit happened :/&quot;</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// On souscrit à l&#39;événement &#39;lockr.seat.unlocked&#39;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// pour activer le bouton et ajuster le message.
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$wamp.subscribe(</span><span style="color:#e6db74;">&#39;lockr.seat.unlocked&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">locker_id</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.btn_msg </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;Lock the seat&quot;</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.seat_state </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.btn_disabled </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">false</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">});
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// Idem pour l&#39;événement &#39;lockr.seat.locked&#39;
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// mais si c&#39;est nous qui avons verrouillé les chiottes,
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// on fait en sorte de pouvoir les déverrouiller.
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$wamp.subscribe(</span><span style="color:#e6db74;">&#39;lockr.seat.locked&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">locker_id</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">$scope.seat_state </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">false</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">(locker_id </span><span style="color:#f92672;">== </span><span style="color:#f8f8f2;">uuid) {
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">$scope.btn_msg </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;Release the seat&quot;</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">} </span><span style="color:#f92672;">else </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">$scope.btn_msg </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;The seat is locked by someone else&quot;</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">$scope.btn_disabled </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">});
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// On récupère un ID unique.
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// Notez qu&#39;on se fout de savoir qui fournit la méthode &#39;get_id&#39;.
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// Ici c&#39;est SeatComponent, mais ça pourrait être un autre composant.
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$wamp.call(</span><span style="color:#e6db74;">&#39;lockr.seat.get_id&#39;</span><span style="color:#f8f8f2;">).then(
+</span><span style="color:#f8f8f2;">    </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">res</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">uuid </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">res;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">}, handleError
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">);
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// On balance un refresh pour mettre à jour le front en fonction
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// de l&#39;état actuel de la ressource.
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$wamp.publish(</span><span style="color:#e6db74;">&#39;lockr.seat.refresh&#39;</span><span style="color:#f8f8f2;">);
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// C&#39;est la méthode appellée au clic du bouton, on agit en fonction
+</span><span style="color:#f8f8f2;">  </span><span style="color:#75715e;">// de l&#39;état de la ressource: on verrouille ou on déverrouille.
+</span><span style="color:#f8f8f2;">  </span><span style="font-style:italic;color:#66d9ef;">$scope</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">toggleLock </span><span style="color:#f92672;">= </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">() {
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">($scope.seat_state) {
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">$wamp.call(</span><span style="color:#e6db74;">&#39;lockr.seat.lock&#39;</span><span style="color:#f8f8f2;">, [uuid]).then(
+</span><span style="color:#f8f8f2;">        </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">res</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">          </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">(res) {
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">$scope.seat_state </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">false</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">          </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">}, handleError);
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">} </span><span style="color:#f92672;">else </span><span style="color:#f8f8f2;">{
+</span><span style="color:#f8f8f2;">      </span><span style="color:#f8f8f2;">$wamp.call(</span><span style="color:#e6db74;">&#39;lockr.seat.unlock&#39;</span><span style="color:#f8f8f2;">, [uuid]).then(
+</span><span style="color:#f8f8f2;">        </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">res</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">          </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">(res) {
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">$scope.seat_state </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+</span><span style="color:#f8f8f2;">          </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">}, handleError);
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">}
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">};
+</span><span style="color:#f8f8f2;">}]);
+</span></pre>
+<p>Il ne nous reste plus qu'à ajouter quelques éléments dans notre
+<em>index.html</em>:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">body </span><span style="color:#a6e22e;">ng-app</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;LockrWebApp&quot; </span><span style="color:#a6e22e;">ng-controller</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;MainCtrl&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="color:#75715e;">&lt;!-- Un bloc pour afficher les erreurs --&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">div </span><span style="color:#a6e22e;">class</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;container&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">div </span><span style="color:#a6e22e;">ng-if</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;error&quot; </span><span style="color:#a6e22e;">class</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;alert alert-danger&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">p</span><span style="color:#f8f8f2;">&gt;There has been an error. Make sure the server and the router are running and reload the page.&lt;/</span><span style="color:#f92672;">p</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">            </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">p</span><span style="color:#f8f8f2;">&gt;{{error}}&lt;/</span><span style="color:#f92672;">p</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">div</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">div</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="color:#75715e;">&lt;!-- Notre maxi bouton --&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">div </span><span style="color:#a6e22e;">class</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;container text-center maxi-btn&quot;</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">        </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">button </span><span style="color:#a6e22e;">ng-class</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;{&#39;btn-primary&#39;: seat_state, &#39;btn-danger&#39;: !seat_state &amp;&amp; btn_disabled, &#39;btn-warning&#39;: !seat_state &amp;&amp; !btn_disabled}&quot;
+</span><span style="color:#f8f8f2;">            </span><span style="color:#a6e22e;">class</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;btn btn-block&quot; </span><span style="color:#a6e22e;">ng-disabled</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;error || btn_disabled&quot; </span><span style="color:#a6e22e;">ng-click</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;toggleLock()&quot;</span><span style="color:#f8f8f2;">&gt;{{btn_msg}}&lt;/</span><span style="color:#f92672;">button</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">div</span><span style="color:#f8f8f2;">&gt;
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">    </span><span style="color:#75715e;">&lt;!-- Les scripts qui vont bien --&gt;
+</span><span style="color:#f8f8f2;">    </span><span style="color:#f8f8f2;">[...]
+</span><span style="color:#f8f8f2;">&lt;/</span><span style="color:#f92672;">body</span><span style="color:#f8f8f2;">&gt;
+</span></pre>
+<p>Et si on teste maintenant, qu'est-ce qui se passe? Rien.</p>
+<p><img src="https://media.giphy.com/media/3uyIgVxP1qAjS/giphy.gif" alt="Ça marche pas..." /></p>
+<p>Il nous manque une étape: la connexion à crossbar. Ça se passe dans
+<em>app.js</em>, où on ajoute:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">app.run([</span><span style="color:#e6db74;">&#39;$wamp&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$wamp</span><span style="color:#f8f8f2;">) {
+</span><span style="color:#f8f8f2;">  </span><span style="color:#f8f8f2;">$wamp.</span><span style="color:#66d9ef;">open</span><span style="color:#f8f8f2;">();
+</span><span style="color:#f8f8f2;">}
+</span></pre>
+<p>La doc d'<a href="https://github.com/voryx/angular-wamp">angular-wamp</a> préciser
+qu'on pourrait ouvrir la connexion de n'importe où. N'importe où y
+compris au démarrage de l'application.</p>
+<h2 id="bilan">Bilan</h2>
+<p>Aller, on a tout ce qu'il nous faut:</p>
+<ul>
+<li>on démarre crossbar (crossbar start, depuis <em>crossbar_env</em>)</li>
+<li>on lance le serveur (SeatComponent, depuis <em>backend_env</em>)</li>
+<li>on ouvre un navigateur sur <a href="http://localhost:8080">http://localhost:8080</a></li>
+</ul>
+<p>Et là, on voit un joli bouton &quot;Lock the seat&quot;. Maintenant on ouvre
+deux ou trois autres onglets, et on sourit en pensant au temps qu'on ne
+perdra pas en se levant pour rien.</p>
+<p>Pour les ceusses qui se demanderait, le code est <a href="https://github.com/greizgh/lockr">en
+ligne</a>.</p>
+<p>Avant de mettre en prod (rien que ça), il nous restera à remplacer tous
+les <em>localhost</em> par le hostname de la machine qui servira
+l'application.</p>
+<p>Même si notre application répond au problème de départ, il existe
+quelques limites:</p>
+<ul>
+<li>Identifier les utilisateurs par un UUID est contraignant: si
+l'utilisateur ferme un onglet ou recharge la page alors qu'il a
+verrouillé la ressource, personne ne pourra la déverrouiller.</li>
+<li>L'identifiant de l'utilisateur verrouillant la ressource est
+envoyé avec le message '<em>lockr.seat.locked</em>'. Il est très simple
+de <em>tricher</em> et de lancer un message '<em>lockr.seat.unlock</em>' avec
+l'uuid récupéré.</li>
+</ul>
+<p>Il est évident que l'intérêt de notre application est très limité,
+c'était plus pour avoir une raison de jouer avec
+<a href="http://crossbar.io/">crossbar</a>, <a href="https://www.python.org/">python</a> et
+<a href="https://angular.io/">angular</a>. On pourrait aller plus loin en imaginant
+un système de file d'attente, identifier les utilisateurs par leur IP
+ou faire en sorte que l'identifiant de l'entité posant le verrou ne
+soit pas divulgué. De la même manière, on ne gère qu'une unique
+ressource, mais on pourrait étendre le système pour gérer les toilettes
+pour dames, une bouilloire ou la machine à café.</p>
+<p>Ça a été l'occasion de voir:</p>
+<ul>
+<li>comment définir une méthode appelable en RPC</li>
+<li>comment effectuer un appel RPC (dans <em>TestComponent</em>)</li>
+<li>comment souscrire à un événement</li>
+<li>comment publier un message (dans la méthode <em>refresh</em> de
+<em>SeatComponent</em>)</li>
+</ul>
+<p><a href="http://crossbar.io/">Crossbar</a> c'est bon, mangez-en. On a travaillé
+ici avec angular et python, mais on aurait tout aussi bien pu bosser en
+C++ avec des composants sur Android. Les différents bindings existants
+sont listés sur la page d'<a href="http://autobahn.ws/">autobahn</a>.</p>
+
+  </div>
+</article>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+  </body>
+
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Serveur WireGuard sur OpenWRT</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="Mise en place d&#x27;un serveur WireGuard sur OpenWRT pour sécuriser les communications" />
+
+    <script>
+      (function(f, a, t, h, o, m){
+        a[h]=a[h]||function(){
+          (a[h].q=a[h].q||[]).push(arguments)
+        };
+        o=f.createElement('script'),
+          m=f.getElementsByTagName('script')[0];
+        o.async=1; o.src=t; o.id='fathom-script';
+        m.parentNode.insertBefore(o,m)
+      })(document, window, '//stats.lowsamplingrate.eu/tracker.js', 'fathom');
+      fathom('set', 'siteId', 'BHLKS');
+      fathom('trackPageview');
+    </script>
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-60-ns pa3">
+      
+<article>
+  <div class="cf">
+    <h1 class="orange lh-title fl w-100 w-80-ns">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;" class="link hover-black">
+        Serveur WireGuard sur OpenWRT
+      </a>
+    </h1>
+    <time class="fl mt4-ns w-100 w-20-ns tr"><small>28/10/2018</small></time>
+  </div>
+  <div class="lh-copy">
+    <p>En début d'année, j'ai investi dans un routeur compatible avec <a href="https://openwrt.org/">OpenWRT</a>, un <a href="https://openwrt.org/toh/hwdata/linksys/linksys_wrt1200ac">Linksys WRT1200AC</a>.
+Il fait très bien son boulot, mais il faut reconnaitre que je ne l'exploite pas encore complètement.</p>
+<p>Par ailleurs, ma solution de VPN précédente était à base d'OpenVPN,
+qui est lourd à mettre en œuvre et à maintenir.
+La goutte d'eau a été quand fail2ban m'envoyait 15 mails par heure
+pour me prévenir du bannissement d'un malandrin qui tapait sur mon VPN.
+J'ai désactivé le service OpenVPN (désolé les copains qui étaient dessus, j'ai pas prévenu).</p>
+<p>Tout ça pour dire que: routeur + VPN = OpenWRT + WireGuard.
+C'est ce que nous allons mettre en place dans la suite de l'article.</p>
+<p>La documentation sur le wiki d'OpenWRT détaille la configuration d'une
+interface pour faire transiter tout le trafic du routeur par un tunnel WireGuard.
+À l'inverse ici, nous allons configurer le routeur en mode &quot;serveur&quot;
+acceptant la connexion de plusieurs pairs <em>nomades</em> (téléphone, laptop)
+pour accéder aux ressources locales.</p>
+<p><a name="continue-reading"></a></p>
+<h2 id="pourquoi-wireguard">Pourquoi WireGuard</h2>
+<p>WireGuard est encore en développement, et n'a pas été audité (pour le moment).
+Cependant, WireGuard a déjà fait l'objet de <a href="https://eprint.iacr.org/2018/080">plusieurs</a> <a href="https://courses.csail.mit.edu/6.857/2018/project/He-Xu-Xu-WireGuard.pdf">papiers</a> qui ont montré que les bases sont solides.
+En plus du <a href="https://www.ndss-symposium.org/ndss2017/ndss-2017-programme/wireguard-next-generation-kernel-network-tunnel/">papier initial</a>.</p>
+<p>OpenVPN, bien que stable, ne fait pas forcément mieux, la version packagée dans Debian Stretch présente des vulnérabilités non patchée.
+Vu sur le <a href="https://security-tracker.debian.org/tracker/source-package/openvpn">debian security tracker</a> le 28/10/2018.</p>
+<p>Mon besoin se limite à pouvoir utiliser mes appareils depuis des réseaux wifi non fiables (hôtel, aéroport, gare, etc).
+Mes critères de sélection sont donc avant tout d'avoir un truc simple à utiliser et si possible avec une faible maintenance.</p>
+<p>WireGuard est résolument simple à mettre en place (pas de PKI comme pour OpenVPN)
+et est disponible sur <a href="https://f-droid.org/en/packages/com.wireguard.android/">f-droid</a> et Linux.
+Ça répond à mon besoin immédiat et concernant la maintenance il s'agira probablement
+de mettre à jour la configuration à l'occasion d'une montée de version.</p>
+<h2 id="etape-0-prerequis">Étape 0: Prérequis</h2>
+<p>Bien! Il est temps de se retrousser les manches et attaquer la mise en place sur le routeur.</p>
+<p>Les prérequis, mais cela semble évident:</p>
+<ul>
+<li>un routeur tournant avec OpenWRT (en version 18.06)</li>
+<li>un cerveau</li>
+<li>de quoi lire et écrire dans un terminal</li>
+</ul>
+<p>Comme la probabilité de foutre la merde sur le routeur est non nulle, on commence par faire une <a href="https://openwrt.org/docs/guide-user/installation/generic.backup#backup_openwrt_configuration">backup de sa configuration</a>.</p>
+<p>Sauf mention contraire, toutes les commandes sont exécutées sur le routeur en tant que <code>root</code>.</p>
+<h2 id="etape-1-installer-wireguard">Étape 1: installer WireGuard</h2>
+<p>On commence en douceur:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">opkg update
+</span><span style="color:#f8f8f2;">opkg install luci-proto-wireguard luci-app-wireguard wireguard kmod-wireguard wireguard-tools
+</span></pre>
+<p>Un <code>lsmod | grep wireguard</code> nous apprend que le module kernel est bien chargé,
+pour autant, la création de l'interface par la suite remonte une erreur &quot;INVALID_PROTO&quot;.
+Bref, un reboot est nécessaire pour la prise en compte de ce nouveau type d'interface.</p>
+<h2 id="etape-2-creer-une-interface-wireguard">Étape 2: Créer une interface WireGuard</h2>
+<p>WireGuard repose sur du chiffrement asymétrique, nous allons donc avoir besoin d'une clé privée et d'une clé publique.
+L'utilitaire <code>wg</code> que l'on vient d'installer permet de faire ça très simplement:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">PRIV_KEY</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">$(wg genkey)
+</span></pre>
+<p>Contrairement à ce que j'ai pu lire ailleurs, on ne va pas écrire la clé dans un fichier, on la conserve en mémoire.
+Elle sera de toute façon écrite dans le fichier de configuration des interfaces, et cela évite de laisser trainer une clé privée sur le disque.</p>
+<p>Nous avons tout ce qu'il faut pour créer l'interface:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">uci set network.wg0=</span><span style="color:#e6db74;">&quot;interface&quot;
+</span><span style="color:#f8f8f2;">uci set network.wg0.proto=</span><span style="color:#e6db74;">&quot;wireguard&quot;
+</span><span style="color:#f8f8f2;">uci set network.wg0.private_key=</span><span style="color:#e6db74;">&quot;$PRIV_KEY&quot;
+</span><span style="color:#f8f8f2;">uci add_list network.wg0.addresses=</span><span style="color:#e6db74;">&quot;10.1.0.1/24&quot;
+</span><span style="color:#f8f8f2;">uci add_list network.wg0.addresses=</span><span style="color:#e6db74;">&quot;fcff:1997:5555::/64&quot;
+</span><span style="color:#f8f8f2;">uci set network.wg0.listen_port=</span><span style="color:#e6db74;">&quot;56718&quot;
+</span><span style="color:#f8f8f2;">uci commit network
+</span><span style="color:#f8f8f2;">/etc/init.d/network reload
+</span></pre>
+<p>Le nom <em>wg0</em> est complètement arbitraire, mais c'est utilisé par la doc de WireGuard alors autant rester cohérent.
+L'IP donnée est également arbitraire, pourvu que vous fournissiez un sous-réseau privé (<a href="https://tools.ietf.org/html/rfc1918">RFC 1918</a>).
+Ici, toutes les machines connectée au VPN auront une adresse de la forme 10.1.0.X ou en IPv6 fcff:1997:5555:0:X:X:X:X.
+Notez que le port d'écoute n'est pas obligatoire, mais sera choisi aléatoirement si il n'est pas spécifié (ce qui peut poser problème par la suite).</p>
+<p>Vous devriez voir une nouvelle interface apparaitre sur le routeur.</p>
+<p>Afin de rentre cette interface utilisable, il nous faut définir sa zone par rapport au pare-feu.
+Je souhaite faire en sorte que mes appareils se comportent comme s'il étaient sur le réseau local,
+donc je vais ajouter l'interface <em>wg0</em> à la zone <em>lan</em>.
+Il est tout à fait possible de définir une nouvelle zone dédiée à WireGuard.</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">uci add_list firewall.@zone</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">0</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.network=</span><span style="color:#e6db74;">&quot;wg0&quot;
+</span><span style="color:#f8f8f2;">uci commit firewall
+</span></pre>
+<p>Chez moi la zone <em>lan</em> porte l'index 0, <code>uci show firewall</code> vous le confirmera.</p>
+<h2 id="etape-3-connecter-un-appareil">Étape 3: Connecter un appareil</h2>
+<p>C'est la tablette Android qui sera le mannequin du crash test.
+Je teste sur LineageOS (v15.1) avec l'application WireGuard provenant de F-droid en version 0.0.20180826.</p>
+<p>On créé un nouveau tunnel via le joli bouton bleu &quot;+&quot;.
+La configuration du tunnel en lui même réclame les informations suivantes:</p>
+<ul>
+<li>name: un nom, original</li>
+<li>private/public key: on appuie juste sur le petit bouton &quot;generate&quot;</li>
+<li>addresses: ce sont les adresses attribuées à l'appareil, ici 10.1.0.2/32 et fcff:1997:5555:0:2::/80</li>
+<li>listen port: laissons random, il s'agit du port côté client</li>
+<li>DNS server: l'IP du routeur: 10.1.0.1 , puisqu'il embarque un serveur DNS</li>
+</ul>
+<p>Ajoutons maintenant un pair, le routeur, en appuyant sur &quot;add peer&quot;:</p>
+<ul>
+<li>public key: on recopie laborieusement la clé publique affichée par <code>wg</code></li>
+<li>allowed IPs: les IPs pour lesquelles le trafic doit être routé par le tunnel, pour tout router: 0.0.0.0/0, ::/0</li>
+<li>endpoint: l'IP publique du routeur et le port d'écoute précédemment renseigné</li>
+</ul>
+<p>Il faut également autoriser cet appareil côté routeur:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">uci add network wireguard_wg0
+</span><span style="color:#f8f8f2;">uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.public_key=</span><span style="color:#e6db74;">&quot;XXXXXXXX&quot;
+</span><span style="color:#f8f8f2;">uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.route_allowed_ips=</span><span style="color:#e6db74;">&quot;1&quot;
+</span><span style="color:#f8f8f2;">uci add_list network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.allowed_ips=</span><span style="color:#e6db74;">&quot;10.1.0.2/32&quot;
+</span><span style="color:#f8f8f2;">uci add_list network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.allowed_ips=</span><span style="color:#e6db74;">&quot;fcff:1997:5555:0:2::/80&quot;
+</span><span style="color:#f8f8f2;">uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.description=</span><span style="color:#e6db74;">&#39;Tablet&#39;
+</span><span style="color:#f8f8f2;">uci commit network
+</span><span style="color:#f8f8f2;">/etc/init.d/network restart
+</span></pre>
+<p>Attention, il est important de bien nommer le réseau: <code>wireguard_&lt;ifname&gt;</code> (cf le <a href="https://openwrt.org/docs/guide-user/network/tunneling_interface_protocols?s%5B%5D=wireguard#static_addressing_of_wireguard_tunnel">wiki OpenWRT</a>).
+Il sera donc normal d'avoir plusieurs entrée avec le même nom &quot;wireguard_wg0&quot; si vous avez plusieurs pairs à connecter.</p>
+<p>Autre point de confusion (je me suis fais avoir): la liste &quot;allowed_ips&quot; correspond aux IPs autorisées pour chaque host.
+Cette liste servira aux routage des paquets, on ne peut donc pas mettre bêtement &quot;0.0.0.0/0&quot; partout.
+La <a href="https://www.wireguard.com/#cryptokey-routing">documentation</a> le résume très bien:</p>
+<blockquote>
+<p>In other words, when sending packets, the list of allowed IPs behaves as a sort of routing table,
+and when receiving packets, the list of allowed IPs behaves as a sort of access control list.</p>
+</blockquote>
+<p>La clé publique est là encore à réécrire, j'ai triché en me l'envoyant par jabber de la tablette au laptop pour éviter une recopie hasardeuse.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Une telle configuration est définitivement plus simple à mettre en place avec WireGuard qu'avec OpenVPN.
+Pas d'autorité de certification à définir et maintenir.
+Le coût en maintenance semble se limiter à adapter la configuration d'une version à l'autre.</p>
+<p>Nous avons un tunnel chiffré entre des appareils nomades (leur IP est inconnue du serveur a priori)
+et leur trafic transite par le routeur.
+L'objectif est atteint.</p>
+<p>Le projet WireGuard est sur de bon rails, il est même prévu d'intégrer le module dans le noyau Linux.
+Dans l'ensemble les outils fonctionnent bien et sont faciles à prendre en main.
+On sent que l'application Android n'est pas la priorité: elle est fonctionnelle, mais une vu des logs serait appréciable
+(actuellement il est possible d'enregistrer le fichier de log sur la carte SD).</p>
+<p>Le projet est encore jeune, mais prometteur et répond à vrai besoin.</p>
+<h2 id="references">Références</h2>
+<ul>
+<li><a href="https://casept.github.io/post/wireguard-server-on-openwrt-router/">https://casept.github.io/post/wireguard-server-on-openwrt-router/</a></li>
+<li><a href="https://www.wireguard.com/">https://www.wireguard.com/</a></li>
+</ul>
+
+  </div>
+</article>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+  </body>
+
+</html>

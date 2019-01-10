@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Cross-Compilation pour windows</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="Compiler un programme depuis Linux pour Windows ou comment jouer avec cmake et les autotools" />
+
+    <script>
+      (function(f, a, t, h, o, m){
+        a[h]=a[h]||function(){
+          (a[h].q=a[h].q||[]).push(arguments)
+        };
+        o=f.createElement('script'),
+          m=f.getElementsByTagName('script')[0];
+        o.async=1; o.src=t; o.id='fathom-script';
+        m.parentNode.insertBefore(o,m)
+      })(document, window, '//stats.lowsamplingrate.eu/tracker.js', 'fathom');
+      fathom('set', 'siteId', 'BHLKS');
+      fathom('trackPageview');
+    </script>
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-60-ns pa3">
+      
+<article>
+  <div class="cf">
+    <h1 class="orange lh-title fl w-100 w-80-ns">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;cross-compile-windows.html&#x2F;" class="link hover-black">
+        Cross-Compilation pour windows
+      </a>
+    </h1>
+    <time class="fl mt4-ns w-100 w-20-ns tr"><small>01/04/2014</small></time>
+  </div>
+  <div class="lh-copy">
+    <h2 id="contexte">Contexte</h2>
+<p>Je souhaite compiler un programme pour windows mais je n'ai pas windows. Hors de question de virtualiser et puis j'aime mon confortable make. Ce sera donc de la cross-compilation.</p>
+<p>Pour ajouter au délire, j'ai besoin des dépendances suivantes: SFML, Box2D, Boost et zlib.</p>
+<p>La méthode décrite par la suite n'engage que moi, j'ai été surpris de voir que ça fonctionnait.</p>
+<p><a name="continue-reading"></a></p>
+<p>Vu qu'on va compiler des librairies et pour éviter d'en foutre partout, on va se créer un dossier genre &quot;<em>crossenv</em>&quot;.</p>
+<h2 id="les-bons-outils">Les bons outils</h2>
+<p>La cross-compilation suppose d'utiliser un compilateur adapté à la cible. Dans le cas présent il s'agit de mingw, on s'empresse donc d'installer gcc-mingw et ses éventuelles dépendances.</p>
+<p>Deux systèmes de construction sont utilisés: CMake et autotools. Dans un cas comme dans un autre, il est possible de spécifier la chaine de compilation que l'on souhaite utiliser (compilateur, linker, etc).</p>
+<h3 id="cmake">CMake</h3>
+<p>CMake permet de définir une toolchain, on ne va pas se priver et on met ça dans <em>toolchain-mingw32.cmake</em>:</p>
+<pre style="background-color:#272822;">
+<span style="color:#75715e;"># the name of the target operating system
+</span><span style="color:#66d9ef;">SET</span><span style="color:#f8f8f2;">(CMAKE_SYSTEM_NAME Windows)
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#75715e;"># which compilers to use for C and C++
+</span><span style="color:#66d9ef;">SET</span><span style="color:#f8f8f2;">(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
+</span><span style="color:#66d9ef;">SET</span><span style="color:#f8f8f2;">(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
+</span><span style="color:#66d9ef;">SET</span><span style="color:#f8f8f2;">(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#75715e;"># here is the target environment located
+</span><span style="color:#66d9ef;">SET</span><span style="color:#f8f8f2;">(CMAKE_FIND_ROOT_PATH  /usr/i686-w64-mingw32 [crossenv] )
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#75715e;"># adjust the default behaviour of the FIND_XXX() commands:
+</span><span style="color:#75715e;"># search headers and libraries in the target environment, search
+</span><span style="color:#75715e;"># programs in the host environment
+</span><span style="color:#66d9ef;">set</span><span style="color:#f8f8f2;">(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+</span><span style="color:#66d9ef;">set</span><span style="color:#f8f8f2;">(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+</span><span style="color:#66d9ef;">set</span><span style="color:#f8f8f2;">(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+</span></pre>
+<p>Je n'ai rien inventé, ça vient du <a href="http://www.cmake.org/Wiki/CmakeMingw">wiki cmake</a>, il faut juste adapter les noms d'éxécutables.</p>
+<p>C'est ensuite presque un plaisir de lancer la compilation de SFML avec ça:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">cmake -DCMAKE_TOOLCHAIN_FILE=[crossenv]/Toolchain-mingw32.cmake -DCMAKE_INSTALL_PREFIX=[crossenv] ..
+</span></pre>
+<p>Il est important d'installer les librairies dans le dossier &quot;<em>crossenv</em>&quot; puisqu'on précise dans la toolchain que c'est là qu'il faut chercher. Et en plus c'est plus hygiénique.</p>
+<p>Même procédure pour Box2D, j'ai juste eu à changer un header (freeglut_internal je crois) car il ne me trouvait pas &lt;<em>Windows.h</em>&gt;: la casse lui posait problème avec &lt;<em>windows.h</em>&gt; ça passe.
+Une fois compilé, on installe les libs Box2D et les includes à la main dans notre crossenv. C'est moche mais ça fonctionne. En même temps on cherche à compiler un truc pour windows, à ce point là on peu bien copier/coller en mode bourrin.</p>
+<h3 id="autotools">Autotools</h3>
+<p>Il nous faut également zlib, qui utilise autotools. Pas de problème, autotools supporte également la cross-compilation.</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">CC=i686-w64-mingw32-gcc AR=&quot;i686-w64-mingw32-ar s&quot; RANLIB=i686-w64-mingw32-ranlib ./configure --prefix=[crossenv]
+</span><span style="color:#f8f8f2;">make
+</span><span style="color:#f8f8f2;">make install
+</span></pre>
+<p>C'est tout. Il faut juste faire gaffe au &quot;i686-w64-mingw32-ar s&quot;, le make pleure sans l'option s.</p>
+<h2 id="boost">Boost</h2>
+<p>Boost est un cas à part puisqu'utilisant un système de compilation maison: bjam. On commence par éditer tools/build/v2/user-config.jam pour y mettre ça:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">using gcc : 4.8 : i686-w64-mingw32-g++ ;
+</span></pre>
+<p>On se fend ensuite de la procédure normale:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">bootstrap.sh --with-libraries=filesystem,system --without-icu
+</span><span style="color:#f8f8f2;">bjam toolset=gcc target-os=windows --prefix=[crossenv] threading=multi threadapi=win32 link=static -j 2 --layout=tagged install
+</span></pre>
+<p>Toutes nos dépendances sont compilées, on est content.</p>
+<h2 id="compilation-finale">Compilation finale</h2>
+<p>Ça aurait pu être le titre d'un film mais si ça avait été le cas ça n'aurait probablement pas été intéressant. Parce qu'en fait ça se résume à ça:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">cmake -DCMAKE_TOOLCHAIN_FILE=[crossenv]/toolchain-mingw32.cmake -DCMAKE_INSTALL_PREFIX=[chez toi ou chez moi] ..
+</span></pre>
+<p>Il reste encore un détail à régler, j'aimerais linker statiquement mon exécutable (bah oui, c'est pour windows toussa...). J'ai été bourrin jusqu'au bout en forçant le linkage statique de la SFML et en fillant les arguments suivants à la compilation de mon soft:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">-DBUILD_SHARED_LIBS=false -DCMAKE_EXE_LINKER_FLAGS=-static
+</span></pre><h2 id="conclusion">Conclusion</h2>
+<p>La cross-compilation pour windows c'est pas si terrible que ça. Je m'attendais à pire. C'est pas encore tip-top (header à bouger à la main, linkage hasardeux) mais on arrive quand même au résultat attendu.
+Ayant tenté de compiler sous windows, c'est quand même plus simple de cross compiler. M'enfin, les goûts, les couleurs...</p>
+
+  </div>
+</article>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+  </body>
+
+</html>

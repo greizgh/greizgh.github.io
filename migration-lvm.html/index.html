@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Migration vers LVM</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="Mise en place de LVM pour la partition système et chiffrement de la partition &#x2F;home" />
+
+    <script>
+      (function(f, a, t, h, o, m){
+        a[h]=a[h]||function(){
+          (a[h].q=a[h].q||[]).push(arguments)
+        };
+        o=f.createElement('script'),
+          m=f.getElementsByTagName('script')[0];
+        o.async=1; o.src=t; o.id='fathom-script';
+        m.parentNode.insertBefore(o,m)
+      })(document, window, '//stats.lowsamplingrate.eu/tracker.js', 'fathom');
+      fathom('set', 'siteId', 'BHLKS');
+      fathom('trackPageview');
+    </script>
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-60-ns pa3">
+      
+<article>
+  <div class="cf">
+    <h1 class="orange lh-title fl w-100 w-80-ns">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;migration-lvm.html&#x2F;" class="link hover-black">
+        Migration vers LVM
+      </a>
+    </h1>
+    <time class="fl mt4-ns w-100 w-20-ns tr"><small>21/03/2014</small></time>
+  </div>
+  <div class="lh-copy">
+    <h2 id="creation-de-la-partition-lvm">Création de la partition LVM</h2>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">pvcreate /dev/sda8
+</span><span style="color:#f8f8f2;">vgcreate vg0 /dev/sda8
+</span></pre><h2 id="deplacement-du-systeme">Déplacement du système</h2>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">lvcreate</span><span style="font-style:italic;color:#fd971f;"> -L</span><span style="color:#f8f8f2;"> 30G</span><span style="font-style:italic;color:#fd971f;"> -n</span><span style="color:#f8f8f2;"> arch vg0
+</span><span style="color:#f8f8f2;">mkfs.ext4</span><span style="font-style:italic;color:#fd971f;"> -j</span><span style="color:#f8f8f2;"> /dev/vg0/arch
+</span><span style="color:#f8f8f2;">mount /dev/vg0/arch /mnt
+</span><span style="color:#66d9ef;">cd</span><span style="color:#f8f8f2;"> /
+</span><span style="color:#f8f8f2;">find ./</span><span style="font-style:italic;color:#fd971f;"> -xdev -print0 </span><span style="color:#f92672;">| </span><span style="color:#f8f8f2;">cpio</span><span style="font-style:italic;color:#fd971f;"> -pm0Vd</span><span style="color:#f8f8f2;"> /mnt
+</span><span style="color:#f8f8f2;">mount /dev/mapper/vg0-arch /mnt
+</span><span style="color:#66d9ef;">cd</span><span style="color:#f8f8f2;"> /mnt
+</span><span style="color:#f8f8f2;">mount /dev/sda3 /mnt/boot
+</span><span style="color:#f8f8f2;">mount</span><span style="font-style:italic;color:#fd971f;"> -t</span><span style="color:#f8f8f2;"> proc proc proc/
+</span><span style="color:#f8f8f2;">mount</span><span style="font-style:italic;color:#fd971f;"> --rbind</span><span style="color:#f8f8f2;"> /sys sys/
+</span><span style="color:#f8f8f2;">mount</span><span style="font-style:italic;color:#fd971f;"> --rbind</span><span style="color:#f8f8f2;"> /dev dev/
+</span><span style="color:#f8f8f2;">chroot /mnt /bin/bash
+</span></pre>
+<p>On édite fstab pour monter /dev/mapper/vg0-arch en /
+On régen la conf grub (désactiver les UUID dans /etc/default/grub)
+On ajoute le hook lvm à mkinitcpio (/etc/mkinitcpio.conf)
+et on regénère l'image:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">mkinitcpio</span><span style="font-style:italic;color:#fd971f;"> -p</span><span style="color:#f8f8f2;"> linux
+</span></pre>
+<p>Let's reboot now!</p>
+<h2 id="deplacement-du-home">Déplacement du home</h2>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">lvcreate</span><span style="font-style:italic;color:#fd971f;"> -L</span><span style="color:#f8f8f2;"> 30G</span><span style="font-style:italic;color:#fd971f;"> -n</span><span style="color:#f8f8f2;"> home vg0
+</span><span style="color:#f8f8f2;">cryptsetup</span><span style="font-style:italic;color:#fd971f;"> -v --cipher</span><span style="color:#f8f8f2;"> aes-xts-plain64</span><span style="font-style:italic;color:#fd971f;"> --key-size</span><span style="color:#f8f8f2;"> 512</span><span style="font-style:italic;color:#fd971f;"> --hash</span><span style="color:#f8f8f2;"> sha512</span><span style="font-style:italic;color:#fd971f;"> --iter-time</span><span style="color:#f8f8f2;"> 5000</span><span style="font-style:italic;color:#fd971f;"> --use-random</span><span style="color:#f8f8f2;"> luksFormat /dev/mapper/vg0-home
+</span><span style="color:#f8f8f2;">cryptsetup open /dev/mapper/vg0-home home
+</span><span style="color:#f8f8f2;">mkfs.ext4 /dev/mapper/home
+</span></pre>
+<p>On copie les données de l'ancien /home sur la nouvelle partition chiffrée:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">mkdir /tmp/oldhome
+</span><span style="color:#f8f8f2;">mount /dev/sda7 /tmp/oldhome
+</span><span style="color:#f8f8f2;">mount /dev/mapper/home /home
+</span><span style="color:#66d9ef;">cd</span><span style="color:#f8f8f2;"> /tmp/oldhome
+</span><span style="color:#f8f8f2;">find ./</span><span style="font-style:italic;color:#fd971f;"> -xdev -print0 </span><span style="color:#f92672;">| </span><span style="color:#f8f8f2;">cpio</span><span style="font-style:italic;color:#fd971f;"> -pm0Vd</span><span style="color:#f8f8f2;"> /home
+</span></pre>
+<p>C'est long quand même...</p>
+<h2 id="montage-automatique">Montage automatique</h2>
+<p>On retire l'ancienne ligne concernant le /home dans fstab.</p>
+<p>On installe pam_mount, et on configure /etc/security/pam_mount.conf.xml:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">volume </span><span style="color:#a6e22e;">user</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;USERNAME&quot; </span><span style="color:#a6e22e;">fstype</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;auto&quot; </span><span style="color:#a6e22e;">path</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;/dev/sdaX&quot; </span><span style="color:#a6e22e;">mountpoint</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;/home&quot; </span><span style="color:#a6e22e;">options</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;fsck,noatime&quot; </span><span style="color:#f8f8f2;">/&gt;
+</span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">mkmountpoint </span><span style="color:#a6e22e;">enable</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;1&quot; </span><span style="color:#a6e22e;">remove</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;true&quot;</span><span style="color:#f8f8f2;">/&gt;
+</span></pre>
+<p>Ainsi que /etc/pam.d/system-auth (cf <a href="https://wiki.archlinux.org/index.php/Pam_mount">archwiki</a>):</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">auth      optional  pam_mount.so
+</span><span style="color:#f8f8f2;">password  optional  pam_mount.so
+</span><span style="color:#f8f8f2;">session   optional  pam_mount.so
+</span></pre><h3 id="ajout-du-7-8-2014">Ajout du 7/8/2014</h3>
+<p>Suite à une mise à jour (2.25), l'utilitaire <em>mount</em> ne semble pas apprécier l'option &quot;-p&quot;.
+La solution est d'ajouter la ligne suivante au pam_mount.conf.xml:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">lclmount</span><span style="color:#f8f8f2;">&gt;mount -t%(FSTYPE) %(VOLUME) %(MNTPT) &quot;%(if %(OPTIONS),-o%(OPTIONS))&quot;&lt;/</span><span style="color:#f92672;">lclmount</span><span style="color:#f8f8f2;">&gt;
+</span></pre>
+  </div>
+</article>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+  </body>
+
+</html>

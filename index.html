@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+    
+    <script>
+      (function(f, a, t, h, o, m){
+        a[h]=a[h]||function(){
+          (a[h].q=a[h].q||[]).push(arguments)
+        };
+        o=f.createElement('script'),
+          m=f.getElementsByTagName('script')[0];
+        o.async=1; o.src=t; o.id='fathom-script';
+        m.parentNode.insertBefore(o,m)
+      })(document, window, '//stats.lowsamplingrate.eu/tracker.js', 'fathom');
+      fathom('set', 'siteId', 'BHLKS');
+      fathom('trackPageview');
+    </script>
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-60-ns pa3">
+      
+      
+      <div class="posts">
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;" class="link hover-near-black">
+                Rust embarqué: jouons avec une stm32
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>10/01/2019</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>Cela fait quelques semaines qu'une petite carte embarquant un stm32 traînait sur mon étagère.</p>
+<p>Ayant récemment eu l'occasion d'assister à une <a href="https://mickcherry.io/talks/embedded_rust/embedded_rust.html">super présentation sur rust dans l'embarqué</a>,
+je n'avais plus d'excuse pour laisser cette carte prendre la poussière.</p>
+<p>C'est parti, nous allons faire clignoter une LED pas-à-pas.
+Au programme: mise en place de l'environnement de développement et découverte des outils Rust pour l'embarqué.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;" class="link hover-near-black">
+                Serveur WireGuard sur OpenWRT
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>28/10/2018</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>En début d'année, j'ai investi dans un routeur compatible avec <a href="https://openwrt.org/">OpenWRT</a>, un <a href="https://openwrt.org/toh/hwdata/linksys/linksys_wrt1200ac">Linksys WRT1200AC</a>.
+Il fait très bien son boulot, mais il faut reconnaitre que je ne l'exploite pas encore complètement.</p>
+<p>Par ailleurs, ma solution de VPN précédente était à base d'OpenVPN,
+qui est lourd à mettre en œuvre et à maintenir.
+La goutte d'eau a été quand fail2ban m'envoyait 15 mails par heure
+pour me prévenir du bannissement d'un malandrin qui tapait sur mon VPN.
+J'ai désactivé le service OpenVPN (désolé les copains qui étaient dessus, j'ai pas prévenu).</p>
+<p>Tout ça pour dire que: routeur + VPN = OpenWRT + WireGuard.
+C'est ce que nous allons mettre en place dans la suite de l'article.</p>
+<p>La documentation sur le wiki d'OpenWRT détaille la configuration d'une
+interface pour faire transiter tout le trafic du routeur par un tunnel WireGuard.
+À l'inverse ici, nous allons configurer le routeur en mode &quot;serveur&quot;
+acceptant la connexion de plusieurs pairs <em>nomades</em> (téléphone, laptop)
+pour accéder aux ressources locales.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;favflix-favicon-video-player&#x2F;" class="link hover-near-black">
+                FavFlix: lecteur vidéo dans la favicon
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>02/10/2018</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>Ne vous êtes-vous jamais demandé comment regarder une vidéo dans la favicon d'un site?
+Vous savez, la <a href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/The_head_metadata_in_HTML#Adding_custom_icons_to_your_site">favicon</a>: cette petite image qui apparait dans les onglets du navigateur?</p>
+<p>Non, vous ne vous êtes jamais posé cette question?
+Cela semble complètement inutile? Effectivement! C'est donc parfaitement indispensable.</p>
+<p>Pourtant, <a href="https://greizgh.github.io/blog/favflix-favicon-video-player/demo.html">voilà ce que ça donne</a>.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;favflix-favicon-video-player&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;raid-systeme-existant.html&#x2F;" class="link hover-near-black">
+                Mise en place de RAID sur un système existant
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>28/07/2016</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>Depuis trois ans j'ai un serveur qui tourne 24/24 dans le cadre
+d'autohébergement. Au bout de trois ans le disque dur du système (oui,
+le seul disque, il n'y a pas que l'État qui fait des coupes
+budgétaires) montre des signes de faiblesse: le démon smart me remonte
+des erreurs à propos de secteurs défectueux. En l'état rien de
+catastrophique, le disque n'est pas plein: il y a encore de la place
+pour réallouer des secteurs. Néanmoins, le moment semble bien choisi
+pour ajouter un second disque à la machine et mettre en place du
+<a href="https://fr.wikipedia.org/wiki/RAID_(informatique)#RAID_1_:_Disques_en_miroir">RAID1</a>
+(miroir).</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;raid-systeme-existant.html&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;" class="link hover-near-black">
+                C&#x27;est crossbar, python et angular qui rentrent dans un bar...
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>09/08/2015</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>Depuis que la société où je travaille a déménagé, il y a quelques
+semaines de ça, mes collègues et moi sommes confrontés à un problème
+majeur: les toilettes sont sur le palier. Le problème avec cette
+topologie, c'est qu'il est impossible de savoir à l'avance si les
+chiottes sont libres ou pas. On se retrouve donc souvent devant une
+porte fermée, dans l'impossibilité d'assouvir nos besoins les plus
+naturels.</p>
+<p>C'est dans ces moments-là que les plus bas instincts se réveillent et
+nous poussent à commettre les pires attrocités. Il est bien connu que
+l'Homme est un loup pour l'Homme. Ainsi, dans le but de maintenir une
+atmosphère conviviale et détendue, il est nécessaire de trouver une
+solution.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rust-algorithmes-genetiques.html&#x2F;" class="link hover-near-black">
+                Rust &amp; Algorithmes génétiques
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>14/06/2015</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>Cela faisait un moment que je lorgnais sur les algorithmes génétiques.
+N'ayant pas d'application sous la main, j'ai laissé traîné un moment, me limitant à la théorie sans jamais m'attaquer à une implémentation.
+Parallèlement, je suis l'activité sur <a href="http://www.rust-lang.org">rust</a> avec intérêt depuis quelques versions.
+Avec la sortie de la première version stable en Mai, c'était le bon moment pour commencer à jouer avec.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rust-algorithmes-genetiques.html&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;vaincre-selinux.html&#x2F;" class="link hover-near-black">
+                Vaincre SELinux
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>24/05/2015</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <p>En voulant mettre en place un serveur de messagerie sur une plate-forme fedora, je me suis trouvé confronté à SElinux.
+Sur le wiki fedora, l'article concernant la mise en place de postfix+dovecot mentionne qu'il ne tient pas compte de SElinux.
+C'est dommage parce que, même si ce n'est pas ultra complexe, cela peut faire perdre beaucoup de temps quand on a pas le réflexe SElinux.
+C'est d'autant plus dommage que peu de ressources mentionnent SElinux dans le cadre de mise en place de services tiers.
+Je pense qu'un grand nombre d'opérateurs préfèrent se débarrasser de SElinux pour être tranquille. C'est loin d'être une solution et cela nous prive des avantages de SElinux, essayons de faire mieux.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;vaincre-selinux.html&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;cross-compile-windows.html&#x2F;" class="link hover-near-black">
+                Cross-Compilation pour windows
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>01/04/2014</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            <h2 id="contexte">Contexte</h2>
+<p>Je souhaite compiler un programme pour windows mais je n'ai pas windows. Hors de question de virtualiser et puis j'aime mon confortable make. Ce sera donc de la cross-compilation.</p>
+<p>Pour ajouter au délire, j'ai besoin des dépendances suivantes: SFML, Box2D, Boost et zlib.</p>
+<p>La méthode décrite par la suite n'engage que moi, j'ai été surpris de voir que ça fonctionnait.</p>
+
+          </div>
+          
+          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;cross-compile-windows.html&#x2F;">Lire la suite</a>
+          
+        </div>
+        
+        <div>
+          <div class="cf">
+            <h1 class="orange lh-title fl w-100 w-80-ns">
+              <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;migration-lvm.html&#x2F;" class="link hover-near-black">
+                Migration vers LVM
+              </a>
+            </h1>
+            <time class="fl mt4-ns w-100 w-20-ns tr"><small>21/03/2014</small></time>
+          </div>
+
+          <div class="summary lh-copy">
+            
+          </div>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+  </body>
+
+</html>
