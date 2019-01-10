@@ -1,0 +1,5 @@
+<div class="tc">
+  <video controls{% if muted %} muted{% endif %}{% if loop %} loop{% endif %} class="mw-100">
+    {% if webm %}<source src="{{webm}}" type="video/webm">{% endif %}
+  </video>
+</div>
