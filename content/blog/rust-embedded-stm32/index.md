@@ -59,7 +59,7 @@ pour les cibles Cortex-M. C'est ce que nous allons utiliser, mais il nous faut p
 Installation express:
 
 ```
-cargo install generate
+cargo install cargo-generate
 ```
 
 ## Bootstrap du projet
