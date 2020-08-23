@@ -35,7 +35,7 @@
       {% set section = get_section(path="blog/_index.md") %}
       <div class="posts">
         {% for page in section.pages %}
-        <div>
+        <div class="mb5">
           <div class="cf">
             <h1 class="orange lh-title fl w-100 w-80-ns">
               <a href="{{ page.permalink }}" class="link hover-near-black">
@@ -49,7 +49,7 @@
             {{ page.summary | safe }}
           </div>
           {% if page.summary %}
-          <a class="fr dib link pv2 ph3 bg-dark-gray white" href="{{page.permalink}}">Lire la suite</a>
+          <a class="fr dib link pa1 black mt2 f6" href="{{page.permalink}}">read more ➡️</a>
           {% endif %}
         </div>
         {% endfor %}
