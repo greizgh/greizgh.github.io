@@ -30,7 +30,7 @@
       </div>
     </header>
 
-    <div class="center w-60-ns pa3">
+    <div class="center w-40-ns pa3">
       {% block content %}
       {% set section = get_section(path="blog/_index.md") %}
       <div class="posts">
@@ -42,7 +42,7 @@
                 {{ page.title }}
               </a>
             </h1>
-            <time class="fl mt4-ns w-100 w-20-ns tr"><small>{{ page.date | date(format="%d/%m/%Y") }}</small></time>
+            <time class="fl mt4-ns w-100 w-20-ns tr f6"><small>{{ page.date | date(format="%d/%m/%Y") }}</small></time>
           </div>
 
           <div class="summary lh-copy">

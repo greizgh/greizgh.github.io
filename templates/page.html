@@ -7,17 +7,19 @@
 {% endblock extra_head %}
 
 {% block content %}
-<article>
-  <div class="cf">
-    <h1 class="orange lh-title fl w-100 w-80-ns">
+<div class="flex justify-center">
+  <article>
+    <h1 class="orange lh-title">
       <a href="{{ page.permalink }}" class="link hover-black">
         {{ page.title }}
       </a>
     </h1>
-    <time class="fl mt4-ns w-100 w-20-ns tr"><small>{{ page.date | date(format="%d/%m/%Y") }}</small></time>
-  </div>
-  <div class="lh-copy">
-    {{ page.content | safe }}
-  </div>
-</article>
+    <div class="w-100 tr f6">
+      <time><small>{{ page.date | date(format="%d/%m/%Y") }}</small></time>
+    </div>
+    <div class="lh-copy measure-wide">
+      {{ page.content | safe }}
+    </div>
+  </article>
+</div>
 {% endblock content %}
