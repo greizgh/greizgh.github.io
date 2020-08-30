@@ -1,0 +1,28 @@
+{% extends "page.html" %}
+
+{% block extra_head %}
+<meta name="description" content="{{ page.description }}" />
+
+<link rel="stylesheet" href="{{ get_url(path="katex.min.css", trailing_slash=false) }}">
+<script defer src="{{ get_url(path="katex.min.js", trailing_slash=false) }}"></script>
+<script defer src="{{ get_url(path="auto-render.min.js", trailing_slash=false) }}"></script>
+</script>
+{% endblock extra_head %}
+
+{% block extra_body %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(
+          document.body,
+          {
+              delimiters: [
+                  {left: "$$", right: "$$", display: true},
+                  {left: "\\[", right: "\\]", display: true},
+                  {left: "$", right: "$", display: false},
+                  {left: "\\(", right: "\\)", display: false}
+              ]
+          }
+      );
+  });
+</script>
+{% endblock extra_body %}
