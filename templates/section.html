@@ -1,0 +1,16 @@
+{% extends "index.html" %}
+
+{% block title %}{{ config.title }} - {{ section.title }}{% endblock title %}
+
+{% block content %}
+<h2 class="mb5 mt5">All articles</h2>
+{% for year, posts in section.pages | group_by(attribute="year") %}
+    <h3>{{ year }}</h3>
+
+    <ul class="mb4">
+    {% for post in posts %}
+        <li><a href="{{ post.permalink }}">{{ post.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% endfor %}
+{% endblock content %}

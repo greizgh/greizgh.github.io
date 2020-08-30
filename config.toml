@@ -19,3 +19,4 @@ title = "Let's shuffle bits"
 [extra]
 # Put all your custom variables here
 minitheme_lang = "fr"
+recent_articles_count = 4

@@ -32,16 +32,17 @@
 
     <div class="center w-40-ns pa3">
       {% block content %}
+      <h1>Recent articles</h1>
       {% set section = get_section(path="blog/_index.md") %}
       <div class="posts">
-        {% for page in section.pages %}
+        {% for page in section.pages | slice(end=config.extra.recent_articles_count) %}
         <div class="mb5">
           <div class="cf">
-            <h1 class="orange lh-title fl w-100 w-80-ns">
+            <h2 class="orange lh-title fl w-100 w-80-ns">
               <a href="{{ page.permalink }}" class="link hover-near-black">
                 {{ page.title }}
               </a>
-            </h1>
+            </h2>
             <time class="fl mt4-ns w-100 w-20-ns tr f6"><small>{{ page.date | date(format="%d/%m/%Y") }}</small></time>
           </div>
 
@@ -53,6 +54,9 @@
           {% endif %}
         </div>
         {% endfor %}
+      </div>
+      <div class="center">
+        <a class="f5 no-underline black bg-animate hover-bg-black hover-white pa3 ba border-box" href="{{ get_url(path="@/blog/_index.md") }}">More articles</a>
       </div>
       {% endblock content %}
     </div>
