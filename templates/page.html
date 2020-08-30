@@ -1,5 +1,9 @@
 {% extends "index.html" %}
 
+{% block canonical %}
+<link rel="canonical" href="{{page.permalink}}" />
+{% endblock canonical %}
+
 {% block title %}{{ config.title }} - {{ page.title }}{% endblock title %}
 
 {% block extra_head %}
