@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Let&#x27;s shuffle bits</title>
+        <link>https://greizgh.github.io</link>
+        <description></description>
+        <generator>Zola</generator>
+        <language>en</language>
+        <atom:link href="https://greizgh.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+        <lastBuildDate>Sun, 30 Aug 2020 00:00:00 +0000</lastBuildDate>
+        
+            <item>
+                <title>Ballistics and calculus</title>
+                <pubDate>Sun, 30 Aug 2020 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/ballistics-and-calculus/</link>
+                <guid>https://greizgh.github.io/blog/ballistics-and-calculus/</guid>
+                <description>&lt;p&gt;I&#x27;m a bit of a fan of math puzzles.
+There is a well-known website publishing puzzles and one of them brought me some fun for a while.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;m not naming the website on purpose, but you can easily find it.
+It&#x27;s named after a famous mathematician who ended up almost blind.
+Fortunately, he had memorized most of his books before.&lt;&#x2F;p&gt;
+&lt;p&gt;You won&#x27;t find a numeric solution here, but rather an outline of the resolution process.
+Most of the equations are already on wikipedia, but without any demonstration.
+I&#x27;ve also seen blog posts explaining how to solve the problem which were quite convoluted (axis change during revolution for instance)&lt;&#x2F;p&gt;
+&lt;p&gt;That&#x27;s what prompted me to detail my approach.
+That and the need to train my math muscles: I don&#x27;t have the opportunity to do much calculus at work.
+Besides, I find typesetting equations in $\LaTeX$ relaxing.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Smart speakers project II</title>
+                <pubDate>Thu, 20 Aug 2020 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/smart-speakers-part2/</link>
+                <guid>https://greizgh.github.io/blog/smart-speakers-part2/</guid>
+                <description>&lt;p&gt;In the &lt;a href=&quot;https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;smart-speakers-plan&#x2F;&quot;&gt;previous article&lt;&#x2F;a&gt; I ended up with a nice &lt;em&gt;master&lt;&#x2F;em&gt; system streaming audio with snapcast.
+It&#x27;s now time to assemble what will be the speakers.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Smart speakers project</title>
+                <pubDate>Mon, 20 Jul 2020 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/smart-speakers-plan/</link>
+                <guid>https://greizgh.github.io/blog/smart-speakers-plan/</guid>
+                <description>&lt;p&gt;I&#x27;ve been wanting to upgrade my sound listening experience since I moved in.
+My current stereo system is a millennium era thing boasting a dual tape player and a 3 CDs tray:&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Ludum Dare 46</title>
+                <pubDate>Sun, 19 Apr 2020 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/projects/ludumdare46/</link>
+                <guid>https://greizgh.github.io/projects/ludumdare46/</guid>
+                <description></description>
+            </item>
+        
+            <item>
+                <title>NixOS chez kimsufi</title>
+                <pubDate>Sat, 15 Jun 2019 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/nixos-kimsufi/</link>
+                <guid>https://greizgh.github.io/blog/nixos-kimsufi/</guid>
+                <description>&lt;p&gt;Notes rapides concernant l&#x27;installation de NixOS sur un serveur &lt;a href=&quot;https:&#x2F;&#x2F;www.kimsufi.com&#x2F;fr&#x2F;&quot;&gt;kimsufi&lt;&#x2F;a&gt;.
+Kimsufi permet de jouer avec des machines dédiées pour moins de 5€ par mois.
+C&#x27;est l&#x27;occasion de tester &lt;a href=&quot;https:&#x2F;&#x2F;nixos.org&#x2F;&quot;&gt;NixOS&lt;&#x2F;a&gt;, une distribution dont la promesse me fait de l&#x27;œil.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Rust embarqué: jouons avec une stm32</title>
+                <pubDate>Thu, 10 Jan 2019 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/rust-embedded-stm32/</link>
+                <guid>https://greizgh.github.io/blog/rust-embedded-stm32/</guid>
+                <description>&lt;p&gt;Cela fait quelques semaines qu&#x27;une petite carte embarquant un stm32 traînait sur mon étagère.&lt;&#x2F;p&gt;
+&lt;p&gt;Ayant récemment eu l&#x27;occasion d&#x27;assister à une &lt;a href=&quot;https:&#x2F;&#x2F;mickcherry.io&#x2F;talks&#x2F;embedded_rust&#x2F;embedded_rust.html&quot;&gt;super présentation sur rust dans l&#x27;embarqué&lt;&#x2F;a&gt;,
+je n&#x27;avais plus d&#x27;excuse pour laisser cette carte prendre la poussière.&lt;&#x2F;p&gt;
+&lt;p&gt;C&#x27;est parti, nous allons faire clignoter une LED pas-à-pas.
+Au programme: mise en place de l&#x27;environnement de développement et découverte des outils Rust pour l&#x27;embarqué.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Serveur WireGuard sur OpenWRT</title>
+                <pubDate>Sun, 28 Oct 2018 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/openwrt-wireguard-server/</link>
+                <guid>https://greizgh.github.io/blog/openwrt-wireguard-server/</guid>
+                <description>&lt;p&gt;En début d&#x27;année, j&#x27;ai investi dans un routeur compatible avec &lt;a href=&quot;https:&#x2F;&#x2F;openwrt.org&#x2F;&quot;&gt;OpenWRT&lt;&#x2F;a&gt;, un &lt;a href=&quot;https:&#x2F;&#x2F;openwrt.org&#x2F;toh&#x2F;hwdata&#x2F;linksys&#x2F;linksys_wrt1200ac&quot;&gt;Linksys WRT1200AC&lt;&#x2F;a&gt;.
+Il fait très bien son boulot, mais il faut reconnaitre que je ne l&#x27;exploite pas encore complètement.&lt;&#x2F;p&gt;
+&lt;p&gt;Par ailleurs, ma solution de VPN précédente était à base d&#x27;OpenVPN,
+qui est lourd à mettre en œuvre et à maintenir.
+La goutte d&#x27;eau a été quand fail2ban m&#x27;envoyait 15 mails par heure
+pour me prévenir du bannissement d&#x27;un malandrin qui tapait sur mon VPN.
+J&#x27;ai désactivé le service OpenVPN (désolé les copains qui étaient dessus, j&#x27;ai pas prévenu).&lt;&#x2F;p&gt;
+&lt;p&gt;Tout ça pour dire que: routeur + VPN = OpenWRT + WireGuard.
+C&#x27;est ce que nous allons mettre en place dans la suite de l&#x27;article.&lt;&#x2F;p&gt;
+&lt;p&gt;La documentation sur le wiki d&#x27;OpenWRT détaille la configuration d&#x27;une
+interface pour faire transiter tout le trafic du routeur par un tunnel WireGuard.
+À l&#x27;inverse ici, nous allons configurer le routeur en mode &amp;quot;serveur&amp;quot;
+acceptant la connexion de plusieurs pairs &lt;em&gt;nomades&lt;&#x2F;em&gt; (téléphone, laptop)
+pour accéder aux ressources locales.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>FavFlix: lecteur vidéo dans la favicon</title>
+                <pubDate>Tue, 02 Oct 2018 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/blog/favflix-favicon-video-player/</link>
+                <guid>https://greizgh.github.io/blog/favflix-favicon-video-player/</guid>
+                <description>&lt;p&gt;Ne vous êtes-vous jamais demandé comment regarder une vidéo dans la favicon d&#x27;un site?
+Vous savez, la &lt;a href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Learn&#x2F;HTML&#x2F;Introduction_to_HTML&#x2F;The_head_metadata_in_HTML#Adding_custom_icons_to_your_site&quot;&gt;favicon&lt;&#x2F;a&gt;: cette petite image qui apparait dans les onglets du navigateur?&lt;&#x2F;p&gt;
+&lt;p&gt;Non, vous ne vous êtes jamais posé cette question?
+Cela semble complètement inutile? Effectivement! C&#x27;est donc parfaitement indispensable.&lt;&#x2F;p&gt;
+&lt;p&gt;Pourtant, &lt;a href=&quot;https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;favflix-favicon-video-player&#x2F;demo.html&quot;&gt;voilà ce que ça donne&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Mise en place de RAID sur un système existant</title>
+                <pubDate>Thu, 28 Jul 2016 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/raid-systeme-existant.html/</link>
+                <guid>https://greizgh.github.io/raid-systeme-existant.html/</guid>
+                <description>&lt;p&gt;Depuis trois ans j&#x27;ai un serveur qui tourne 24&#x2F;24 dans le cadre
+d&#x27;autohébergement. Au bout de trois ans le disque dur du système (oui,
+le seul disque, il n&#x27;y a pas que l&#x27;État qui fait des coupes
+budgétaires) montre des signes de faiblesse: le démon smart me remonte
+des erreurs à propos de secteurs défectueux. En l&#x27;état rien de
+catastrophique, le disque n&#x27;est pas plein: il y a encore de la place
+pour réallouer des secteurs. Néanmoins, le moment semble bien choisi
+pour ajouter un second disque à la machine et mettre en place du
+&lt;a href=&quot;https:&#x2F;&#x2F;fr.wikipedia.org&#x2F;wiki&#x2F;RAID_(informatique)#RAID_1_:_Disques_en_miroir&quot;&gt;RAID1&lt;&#x2F;a&gt;
+(miroir).&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>C&#x27;est crossbar, python et angular qui rentrent dans un bar...</title>
+                <pubDate>Sun, 09 Aug 2015 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/crossbar-python-angular-dans-un-bar.html/</link>
+                <guid>https://greizgh.github.io/crossbar-python-angular-dans-un-bar.html/</guid>
+                <description>&lt;p&gt;Depuis que la société où je travaille a déménagé, il y a quelques
+semaines de ça, mes collègues et moi sommes confrontés à un problème
+majeur: les toilettes sont sur le palier. Le problème avec cette
+topologie, c&#x27;est qu&#x27;il est impossible de savoir à l&#x27;avance si les
+chiottes sont libres ou pas. On se retrouve donc souvent devant une
+porte fermée, dans l&#x27;impossibilité d&#x27;assouvir nos besoins les plus
+naturels.&lt;&#x2F;p&gt;
+&lt;p&gt;C&#x27;est dans ces moments-là que les plus bas instincts se réveillent et
+nous poussent à commettre les pires attrocités. Il est bien connu que
+l&#x27;Homme est un loup pour l&#x27;Homme. Ainsi, dans le but de maintenir une
+atmosphère conviviale et détendue, il est nécessaire de trouver une
+solution.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Rust &amp; Algorithmes génétiques</title>
+                <pubDate>Sun, 14 Jun 2015 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/rust-algorithmes-genetiques.html/</link>
+                <guid>https://greizgh.github.io/rust-algorithmes-genetiques.html/</guid>
+                <description>&lt;p&gt;Cela faisait un moment que je lorgnais sur les algorithmes génétiques.
+N&#x27;ayant pas d&#x27;application sous la main, j&#x27;ai laissé traîné un moment, me limitant à la théorie sans jamais m&#x27;attaquer à une implémentation.
+Parallèlement, je suis l&#x27;activité sur &lt;a href=&quot;http:&#x2F;&#x2F;www.rust-lang.org&quot;&gt;rust&lt;&#x2F;a&gt; avec intérêt depuis quelques versions.
+Avec la sortie de la première version stable en Mai, c&#x27;était le bon moment pour commencer à jouer avec.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Vaincre SELinux</title>
+                <pubDate>Sun, 24 May 2015 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/vaincre-selinux.html/</link>
+                <guid>https://greizgh.github.io/vaincre-selinux.html/</guid>
+                <description>&lt;p&gt;En voulant mettre en place un serveur de messagerie sur une plate-forme fedora, je me suis trouvé confronté à SElinux.
+Sur le wiki fedora, l&#x27;article concernant la mise en place de postfix+dovecot mentionne qu&#x27;il ne tient pas compte de SElinux.
+C&#x27;est dommage parce que, même si ce n&#x27;est pas ultra complexe, cela peut faire perdre beaucoup de temps quand on a pas le réflexe SElinux.
+C&#x27;est d&#x27;autant plus dommage que peu de ressources mentionnent SElinux dans le cadre de mise en place de services tiers.
+Je pense qu&#x27;un grand nombre d&#x27;opérateurs préfèrent se débarrasser de SElinux pour être tranquille. C&#x27;est loin d&#x27;être une solution et cela nous prive des avantages de SElinux, essayons de faire mieux.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Cross-Compilation pour windows</title>
+                <pubDate>Tue, 01 Apr 2014 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/cross-compile-windows.html/</link>
+                <guid>https://greizgh.github.io/cross-compile-windows.html/</guid>
+                <description>&lt;h2 id=&quot;contexte&quot;&gt;Contexte&lt;&#x2F;h2&gt;
+&lt;p&gt;Je souhaite compiler un programme pour windows mais je n&#x27;ai pas windows. Hors de question de virtualiser et puis j&#x27;aime mon confortable make. Ce sera donc de la cross-compilation.&lt;&#x2F;p&gt;
+&lt;p&gt;Pour ajouter au délire, j&#x27;ai besoin des dépendances suivantes: SFML, Box2D, Boost et zlib.&lt;&#x2F;p&gt;
+&lt;p&gt;La méthode décrite par la suite n&#x27;engage que moi, j&#x27;ai été surpris de voir que ça fonctionnait.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+            <item>
+                <title>Migration vers LVM</title>
+                <pubDate>Fri, 21 Mar 2014 00:00:00 +0000</pubDate>
+                <link>https://greizgh.github.io/migration-lvm.html/</link>
+                <guid>https://greizgh.github.io/migration-lvm.html/</guid>
+                <description>&lt;h2 id=&quot;creation-de-la-partition-lvm&quot;&gt;Création de la partition LVM&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;pvcreate &#x2F;dev&#x2F;sda8
+vgcreate vg0 &#x2F;dev&#x2F;sda8
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;&lt;h2 id=&quot;deplacement-du-systeme&quot;&gt;Déplacement du système&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;lvcreate&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -L&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; 30G&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; arch vg0
+mkfs.ext4&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -j&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;dev&#x2F;vg0&#x2F;arch
+mount &#x2F;dev&#x2F;vg0&#x2F;arch &#x2F;mnt
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#66d9ef;&quot;&gt;cd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;
+find .&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -xdev -print0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f92672;&quot;&gt;| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;cpio&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -pm0Vd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;mnt
+mount &#x2F;dev&#x2F;mapper&#x2F;vg0-arch &#x2F;mnt
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#66d9ef;&quot;&gt;cd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;mnt
+mount &#x2F;dev&#x2F;sda3 &#x2F;mnt&#x2F;boot
+mount&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; proc proc proc&#x2F;
+mount&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; --rbind&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;sys sys&#x2F;
+mount&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; --rbind&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;dev dev&#x2F;
+chroot &#x2F;mnt &#x2F;bin&#x2F;bash
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;On édite fstab pour monter &#x2F;dev&#x2F;mapper&#x2F;vg0-arch en &#x2F;
+On régen la conf grub (désactiver les UUID dans &#x2F;etc&#x2F;default&#x2F;grub)
+On ajoute le hook lvm à mkinitcpio (&#x2F;etc&#x2F;mkinitcpio.conf)
+et on regénère l&#x27;image:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;mkinitcpio&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; linux
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Let&#x27;s reboot now!&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;deplacement-du-home&quot;&gt;Déplacement du home&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;lvcreate&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -L&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; 30G&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; home vg0
+cryptsetup&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -v --cipher&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; aes-xts-plain64&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; --key-size&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; 512&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; --hash&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; sha512&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; --iter-time&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; 5000&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; --use-random&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; luksFormat &#x2F;dev&#x2F;mapper&#x2F;vg0-home
+cryptsetup open &#x2F;dev&#x2F;mapper&#x2F;vg0-home home
+mkfs.ext4 &#x2F;dev&#x2F;mapper&#x2F;home
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;On copie les données de l&#x27;ancien &#x2F;home sur la nouvelle partition chiffrée:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;mkdir &#x2F;tmp&#x2F;oldhome
+mount &#x2F;dev&#x2F;sda7 &#x2F;tmp&#x2F;oldhome
+mount &#x2F;dev&#x2F;mapper&#x2F;home &#x2F;home
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#66d9ef;&quot;&gt;cd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;tmp&#x2F;oldhome
+find .&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -xdev -print0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f92672;&quot;&gt;| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;cpio&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#fd971f;&quot;&gt; -pm0Vd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt; &#x2F;home
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;C&#x27;est long quand même...&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;montage-automatique&quot;&gt;Montage automatique&lt;&#x2F;h2&gt;
+&lt;p&gt;On retire l&#x27;ancienne ligne concernant le &#x2F;home dans fstab.&lt;&#x2F;p&gt;
+&lt;p&gt;On installe pam_mount, et on configure &#x2F;etc&#x2F;security&#x2F;pam_mount.conf.xml:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f92672;&quot;&gt;volume &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;user&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;USERNAME&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;fstype&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;auto&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;path&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;&#x2F;dev&#x2F;sdaX&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;mountpoint&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;&#x2F;home&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;options&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;fsck,noatime&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;&#x2F;&amp;gt;
+&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f92672;&quot;&gt;mkmountpoint &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;enable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;1&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a6e22e;&quot;&gt;remove&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#e6db74;&quot;&gt;&amp;quot;true&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;&#x2F;&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Ainsi que &#x2F;etc&#x2F;pam.d&#x2F;system-auth (cf &lt;a href=&quot;https:&#x2F;&#x2F;wiki.archlinux.org&#x2F;index.php&#x2F;Pam_mount&quot;&gt;archwiki&lt;&#x2F;a&gt;):&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;auth      optional  pam_mount.so
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;password  optional  pam_mount.so
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;session   optional  pam_mount.so
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;&lt;h3 id=&quot;ajout-du-7-8-2014&quot;&gt;Ajout du 7&#x2F;8&#x2F;2014&lt;&#x2F;h3&gt;
+&lt;p&gt;Suite à une mise à jour (2.25), l&#x27;utilitaire &lt;em&gt;mount&lt;&#x2F;em&gt; ne semble pas apprécier l&#x27;option &amp;quot;-p&amp;quot;.
+La solution est d&#x27;ajouter la ligne suivante au pam_mount.conf.xml:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#272822;&quot;&gt;
+&lt;span style=&quot;color:#f8f8f2;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f92672;&quot;&gt;lclmount&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;&amp;gt;mount -t%(FSTYPE) %(VOLUME) %(MNTPT) &amp;quot;%(if %(OPTIONS),-o%(OPTIONS))&amp;quot;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f92672;&quot;&gt;lclmount&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f8f8f2;&quot;&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;pre&gt;</description>
+            </item>
+        
+    </channel>
+</rss>

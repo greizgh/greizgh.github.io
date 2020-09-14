@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://greizgh.github.io/sitemap.xml

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Vaincre SELinux</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="En voulant mettre en place un serveur de messagerie sur une plate-forme fedora, je me suis trouvé confronté à SElinux. Peu de ressources mentionnent SElinux dans le cadre de mise en place de services tiers et je pense qu&#x27;un grand nombre d&#x27;opérateurs se débarrassent de SElinux pour être tranquille. Essayons de faire mieux" />
+
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-40-ns pa3">
+      
+<div class="flex justify-center">
+  <article>
+    <h1 class="orange lh-title">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;vaincre-selinux.html&#x2F;" class="link hover-black">
+        Vaincre SELinux
+      </a>
+    </h1>
+    <div class="w-100 tr f6">
+      <time><small>🖋️ 24&#x2F;05&#x2F;2015</small></time>
+    </div>
+    <div class="lh-copy measure-wide">
+      <p>En voulant mettre en place un serveur de messagerie sur une plate-forme fedora, je me suis trouvé confronté à SElinux.
+Sur le wiki fedora, l'article concernant la mise en place de postfix+dovecot mentionne qu'il ne tient pas compte de SElinux.
+C'est dommage parce que, même si ce n'est pas ultra complexe, cela peut faire perdre beaucoup de temps quand on a pas le réflexe SElinux.
+C'est d'autant plus dommage que peu de ressources mentionnent SElinux dans le cadre de mise en place de services tiers.
+Je pense qu'un grand nombre d'opérateurs préfèrent se débarrasser de SElinux pour être tranquille. C'est loin d'être une solution et cela nous prive des avantages de SElinux, essayons de faire mieux.</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<p>La présentation <a href="https://www.youtube.com/watch?v=MxjenQ31b70">SElinux for mere mortals</a> de <em>Thomas Cameron</em> est excellente pour se mettre dans le bain.
+Prévoyez tout de même 50 minutes pour démystifier SElinux.
+Si l'outil ne semble pas extrêmement complexe dans sa mise en œuvre, il y a pourtant fort à parier qu'il se mettra dans vos pattes à la première occasion.</p>
+<p>La suite de l'article est une synthèse de la méthode de diagnostic développée dans <em>SElinux for mere mortals</em>.</p>
+<h2 id="le-choix-des-armes">Le choix des armes</h2>
+<p>On s'assure dans un premier temps d'avoir les outils nécessaires:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">yum install setools-console setroubleshoot-server setroubleshoot-plugins
+</span></pre>
+<p>Si le nom du paquet <em>setools-console</em> est assez clair sur ce qu'il contient, <em>setroubleshoot-server</em> mérite d'être explicité un chouia.</p>
+<p>Sur les distributions &quot;Desktop&quot;, setroubleshootd tourne en tant que démon et informe en live l'utilisateur des erreurs SElinux.
+Le paquet <em>setroobleshoot-server</em> est destiné aux machines où cela n'est pas nécessaire, les serveurs entre autre.
+Rien à voir donc avec un démon qui tournerai en tâche de fond, en revanche ce paquet fournit l'utilitaire <strong>sealert</strong> qui nous servira par la suite.</p>
+<h2 id="mode-permissive">Mode permissive</h2>
+<p>À l'installation, SElinux est en mode &quot;Enforce&quot;, cela signifie que les actions non autorisées seront purement et simplement bloquée.
+Nous allons donc passer SElinux en mode &quot;Permissive&quot; afin d'autoriser les actions normalement bloquées tout en remplissant les logs d'informations utiles.
+Pour cela: <code>setenforce 0</code></p>
+<p><strong>Ceci n'est que temporaire</strong> sur la durée du diagnostic, l'objectif est bien entendu d'être en mode &quot;Enforce&quot; en production.</p>
+<h2 id="tour-de-chauffe">Tour de chauffe</h2>
+<p>Mon problème était une erreur lors de la connexion d'un utilisateur à dovecot (permission denied).
+Pour remettre dans le contexte: la distribution de mails repose sur des utilisateurs virtuels, il me faut donc un répertoire dans lequel stocker les mails des utilisateurs: <em>/var/vmail</em> dans mon cas.</p>
+<p>En parcourant les logs SElinux, j'ai fini par saisir que SElinux estime que dovecot n'a aucune raison d'écrire dans le répertoire <em>/var/vmail</em>.
+Comprendre par là que ce comportement ne correspond à aucune règle SElinux.
+SElinux empêche donc dovecot d'écrire dans ce répertoire, d'où le <em>permission denied</em> et l'échec à la connexion.</p>
+<p>En mode permissive, la connexion s'effectue correctement et dovecot me créer bien mon répertoire.
+C'est donc bien SElinux qui fout le bordel et comme c'est pas trop mal fait, on a quelques lignes de logs dans /var/log/audit/audit.log.</p>
+<p>On peut les lire ou on peut demander à l'utilitaire &quot;sealert&quot; de les analyser pour nous:
+<code>sealert -a /var/log/audit/audit.log</code>
+et là bim plein d'infos:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">SELinux is preventing imap from add_name access on the directory truc.com.
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">***  Plugin catchall_labels (83.8 confidence) suggests   *****************
+</span><span style="color:#f8f8f2;">
+</span><span style="color:#f8f8f2;">If you want to allow imap to have add_name access on the truc.com directory
+</span><span style="color:#f8f8f2;">Then l&#39;étiquette sur truc.com doit être modifiée.
+</span><span style="color:#f8f8f2;">Do
+</span><span style="color:#f8f8f2;"># semanage fcontext -a -t FILE_TYPE &#39;truc.com&#39;
+</span><span style="color:#f8f8f2;">où FILE_TYPE est l&#39;une des valeurs suivantes : admin_home_t, cache_home_t, config_home_t, data_home_t, dovecot_spool_t, dovecot_tmp_t, dovecot_var_lib_t, dovecot_var_log_t, dovecot_var_run_t, gconf_home_t, gnome_home_t, httpd_user_content_t, httpd_user_script_exec_t, krb5_host_rcache_t, mail_home_rw_t, mail_spool_t, mozilla_plugin_rw_t, postfix_private_t, telepathy_cache_home_t, telepathy_data_home_t, tmp_t, user_fonts_t, user_home_dir_t, user_home_t, user_tmp_t, var_lib_t, var_log_t, var_run_t, virt_home_t. 
+</span><span style="color:#f8f8f2;">Puis exécutez : 
+</span><span style="color:#f8f8f2;">restorecon -v &#39;truc.com&#39;
+</span></pre>
+<p>Magique, sealert nous donne même la solution à notre problème!</p>
+<h2 id="passage-au-stand">Passage au stand</h2>
+<p>Sur les conseils de sealert, j'ai lancé:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">semanage fcontext -a -t mail_spool_t &quot;/var/vmail(/.*)?&quot;
+</span><span style="color:#f8f8f2;">restorecon -v /var/vmail/
+</span></pre>
+<p>L'objectif de cette commande c'est de dire à SElinux, le répertoire /var/vmail et ses enfants sont de type <strong>mail_spool_t</strong>.
+Dans le jargon SElinux, il s'agit de changer le contexte du répertoire /var/vmail.
+Comme il y a une règle SElinux disant que l'utilisateur imap (dovecot) peut accéder sans souci aux fichiers de type mail_spool_t, on ne devrait plus avoir de problème!</p>
+<p>Le &quot;/var/vmail(/*)?&quot; en lieu et place de 'truc.com' proposé par sealert c'est pour appliquer la règle sur le répertoire mais également sur ses enfants.
+&quot;truc.com&quot; est en réalité un sous-répertoire de /var/vmail.</p>
+<p><strong>restorecon</strong>, c'est pour redonner aux fichiers /var/vmail le bon type SElinux.</p>
+<p>On repasse en mode enforce:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">setenforce 1
+</span></pre>
+<p>Et tout roule! Ça va, on ne s'est pas trop fatigué.</p>
+<h2 id="les-modules">Les modules</h2>
+<p>Parfois, sealert nous propose de régler le problème avec un &quot;policy package&quot;.
+Il s'agit en gros d'un fichier de règles définissant un comportement autorisé (ou non).</p>
+<p>Ce n'est pas plus compliqué que ce qu'on vient de faire, la démarche est strictement la même et souvent cela se résume à une commande du genre:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">grep &lt;truc&gt; /var/log/audit/audit.log | audit2allow -M mypol
+</span><span style="color:#f8f8f2;">semodule -i mypol.pp
+</span></pre>
+<p>Le premier souci auquel j'ai du faire face avec SELinux, c'est que dovecot ne pouvait pas se connecter à postgresql.
+En suivant la démarche ci-dessus, on génère un &quot;policy module&quot; (.pp) qui est le résultat de la compilation du fichier &quot;type enforcement&quot; (.te) avec ce contenu:</p>
+<pre style="background-color:#272822;">
+<span style="color:#75715e;"># SElinux rule to allow dovecot to connect to postgres
+</span><span style="color:#f8f8f2;">module dovecot_postgres 1.0</span><span style="color:#f92672;">;
+
+</span><span style="color:#f8f8f2;">require {
+    type dovecot_auth_t;
+    type postgresql_port_t;
+    class tcp_socket name_connect;
+}
+
+</span><span style="color:#75715e;">#============= dovecot_auth_t ==============
+</span><span style="color:#f8f8f2;">allow dovecot_auth_t postgresql_port_t:tcp_socket name_connect</span><span style="color:#f92672;">;
+</span></pre>
+<p>Et une fois appliqué, dovecot cause bien avec postgres.</p>
+<p>On peut également avoir envie de déployer un fichier de règle sur plusieurs machines.
+Dans ce cas on ne va pas versionner <em>policy package</em> puisqu'il est compilé, mais sa source: le fichier <em>type enforcement</em> (.te).
+Pour compiler le <em>.te</em> en <em>.pp</em>, on peut faire ça:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;"> checkmodule -M -m -o dovecot_postgres.mod dovecot_postgres.te
+</span><span style="color:#f8f8f2;"> semodule_package -o dovecot_postgres.pp -m dovecot_postgres.mod
+</span></pre>
+<p>Et enfin on applique avec <code>semodule -i dovecot_postgres.pp</code>.</p>
+<h2 id="les-booleens">Les Booléens</h2>
+<p>Pour les opérations courantes, on peut également passer par des booléens. En gros ça permet de dire &quot;autoriser à faire un truc&quot; → oui/non.
+De manière générale les noms sont explicites avec des &quot;httpd_can_connect_ldap&quot; et correspondent à des raccourcis pour dire à SElinux comment se comporter.
+La liste des booléens peut être obtenue par: <code>getsebool -a</code>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Si SElinux peut apparaitre contraignant, c'est qu'il est plus souvent écrit comment le désactiver que comment lever les blocages de sécurité.
+C'est dommage parce que ça contribue à faire apparaitre SElinux comme une usine à gaz, alors qu'en fin de compte c'est relativement simple à mettre en place.</p>
+<p>Voilà des resources intéressantes pour se plonger rapidement dans SElinux:</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=MxjenQ31b70">SElinux for mere mortals</a>, la présentation de <em>Thomas Cameron</em>;</li>
+<li><a href="http://sametmax.com/sassurer-que-selinux-ne-bloque-pas-un-programme/">Un article de Sam&amp;Max</a> dans lequel ils parlent de setsebool (forcément un truc de boule);</li>
+<li><a href="https://docs.fedoraproject.org/en-US/Fedora/22/html/SELinux_Users_and_Administrators_Guide/index.html">La doc fedora</a> très complète;</li>
+</ul>
+<p>Bref, SElinux demande un effort pour s'y mettre, mais ça vaut le coup. D'autant plus que ça fait perdre un temps fou quand on passe à côté.</p>
+
+    </div>
+  </article>
+</div>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+        <a class="link black hover-silver dib h2 w2" href="https://gitlab.com/greizgh" title="GitLab">
+          <svg fill="currentColor" viewBox="0 0 586 559">
+            <path d="M461.514,298.355l-18.049-55.587c0.008,0.025,0.011,0.051,0.019,0.076c-0.009-0.029-0.014-0.058-0.022-0.087
+                     c-0.001-0.002-0.001-0.003-0.001-0.005c0-0.001,0-0.002,0-0.002l-35.83-110.31c-1.96-5.811-7.353-9.711-13.536-9.663
+                     c-6.201,0.032-11.446,3.857-13.364,9.748L346.721,237.23H239.408l-34.074-104.712c-1.916-5.886-7.162-9.71-13.362-9.742
+                     c-0.025,0-0.049,0-0.075,0c-6.105,0-11.509,3.876-13.49,9.752l-35.732,110.211l-0.005,0.014c0,0.001,0,0.002,0,0.003
+                     c-0.009,0.028-0.013,0.056-0.022,0.084c0.008-0.025,0.011-0.051,0.019-0.076l-18.115,55.591c-2.725,8.392,0.232,17.512,7.36,22.697
+                     L288.328,434.7c0.023,0.017,0.049,0.027,0.072,0.044c0.067,0.048,0.132,0.097,0.2,0.142c-0.064-0.043-0.124-0.09-0.187-0.134
+                     c0,0,0-0.001-0.001-0.001c0.01,0.008,0.022,0.013,0.033,0.02c0.009,0.006,0.018,0.01,0.027,0.016
+                     c0.001,0.001,0.002,0.002,0.004,0.003c0.242,0.168,0.493,0.322,0.753,0.463c0.036,0.02,0.068,0.045,0.104,0.064
+                     c0.001,0,0.001,0.001,0.002,0.001c0.022,0.011,0.042,0.025,0.064,0.036c0.017,0.008,0.035,0.013,0.051,0.021
+                     c0.012,0.006,0.025,0.01,0.037,0.015c0.029,0.014,0.061,0.023,0.09,0.038c0.136,0.065,0.279,0.118,0.419,0.175
+                     c0.131,0.054,0.258,0.117,0.392,0.164c0.006,0.002,0.011,0.005,0.017,0.007c0.022,0.008,0.042,0.019,0.065,0.027
+                     c0.028,0.01,0.055,0.021,0.083,0.03c0.011,0.003,0.022,0.005,0.033,0.008c0.035,0.011,0.073,0.016,0.108,0.026
+                     c0.013,0.004,0.028,0.006,0.042,0.01c0.188,0.057,0.383,0.098,0.577,0.141c0.076,0.017,0.149,0.041,0.226,0.055
+                     c0.011,0.002,0.021,0.006,0.033,0.008c0.025,0.005,0.048,0.014,0.074,0.018c0.041,0.007,0.081,0.02,0.123,0.026
+                     c0.033,0.005,0.067,0.003,0.1,0.008c0.006,0.001,0.011,0,0.017,0.001c0.002,0,0.003,0,0.005,0c0.369,0.053,0.743,0.09,1.124,0.09
+                     c0.002,0,0.004,0,0.007,0l0,0c0.001,0,0.002,0,0.002,0c0,0,0.001,0,0.001,0c0.001,0,0.002,0,0.003,0
+                     c0.382,0,0.756-0.037,1.126-0.09c0.001,0,0.003,0,0.004,0c0.006-0.001,0.012,0,0.018-0.001c0.033-0.005,0.068-0.003,0.101-0.008
+                     c0.042-0.007,0.082-0.019,0.124-0.026c0.025-0.004,0.048-0.013,0.073-0.018c0.011-0.002,0.021-0.006,0.032-0.008
+                     c0.078-0.015,0.153-0.039,0.231-0.056c0.191-0.042,0.383-0.083,0.57-0.139c0.013-0.004,0.026-0.005,0.039-0.009
+                     c0.037-0.011,0.075-0.016,0.112-0.027c0.011-0.004,0.023-0.005,0.034-0.008c0.029-0.009,0.057-0.021,0.085-0.031
+                     c0.022-0.008,0.042-0.019,0.064-0.027c0.006-0.002,0.011-0.005,0.017-0.007c0.142-0.05,0.276-0.116,0.415-0.173
+                     c0.129-0.054,0.261-0.102,0.387-0.162c0.031-0.015,0.064-0.024,0.094-0.039c0.012-0.006,0.026-0.01,0.038-0.016
+                     c0.017-0.008,0.035-0.013,0.052-0.022c0.023-0.012,0.045-0.026,0.067-0.037c0,0,0.001,0,0.001-0.001
+                     c0.037-0.019,0.07-0.046,0.107-0.066c0.258-0.14,0.508-0.293,0.749-0.46c0.019-0.013,0.041-0.023,0.061-0.037
+                     c0.005-0.004,0.011-0.006,0.016-0.01c0.023-0.017,0.05-0.028,0.073-0.045l156.44-113.65
+                     C461.282,315.867,464.239,306.747,461.514,298.355z M394.194,142.774l30.68,94.456h-61.36L394.194,142.774z M419.501,253.202
+                     l-12.519,16.041L314.648,387.55l43.677-134.348H419.501z M285.428,430.707C285.428,430.707,285.428,430.707,285.428,430.707
+                     c0.008,0.024,0.021,0.046,0.029,0.071C285.449,430.753,285.436,430.731,285.428,430.707z M271.42,387.558L166.624,253.202l0,0
+                     h61.18L271.42,387.558z M191.875,142.773l30.737,94.457h-61.36L191.875,142.773z M141.304,308.133
+                     c-1.516-1.103-2.144-3.05-1.563-4.838l13.466-41.325l98.67,126.502L141.304,308.133z M288.053,434.489
+                     c-0.031-0.025-0.061-0.052-0.091-0.078c-0.006-0.005-0.012-0.012-0.019-0.017c-0.06-0.05-0.119-0.101-0.177-0.153
+                     c-0.114-0.099-0.226-0.2-0.333-0.306c0.009,0.008,0.019,0.015,0.028,0.023c0.012,0.011,0.025,0.02,0.037,0.031
+                     c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
+                     C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
+                     M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
+		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+    
+    
+  </body>
+
+</html>

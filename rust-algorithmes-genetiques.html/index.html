@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Rust &amp; Algorithmes génétiques</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="" />
+
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-40-ns pa3">
+      
+<div class="flex justify-center">
+  <article>
+    <h1 class="orange lh-title">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rust-algorithmes-genetiques.html&#x2F;" class="link hover-black">
+        Rust &amp; Algorithmes génétiques
+      </a>
+    </h1>
+    <div class="w-100 tr f6">
+      <time><small>🖋️ 14&#x2F;06&#x2F;2015</small></time>
+    </div>
+    <div class="lh-copy measure-wide">
+      <p>Cela faisait un moment que je lorgnais sur les algorithmes génétiques.
+N'ayant pas d'application sous la main, j'ai laissé traîné un moment, me limitant à la théorie sans jamais m'attaquer à une implémentation.
+Parallèlement, je suis l'activité sur <a href="http://www.rust-lang.org">rust</a> avec intérêt depuis quelques versions.
+Avec la sortie de la première version stable en Mai, c'était le bon moment pour commencer à jouer avec.</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<p>Rust est un jeune langage créé par Mozilla.
+Il se positionne sur le créneau des langages systèmes, là où le C et le C++ règnent en maîtres.
+L'objectif est de proposer un langage sûr en apportant des garanties sur la manière dont la mémoire est gérée.
+Le besoin à l'origine de Rust est né du développement de <a href="https://github.com/servo/servo">Servo</a>, le moteur de rendu HTML expérimental de Mozilla.</p>
+<p><strong>Disclaimer</strong>: Je parle ici de mon apprentissage de <a href="http://www.rust-lang.org">rust</a>, je ne suis pas une référence. Si quelque chose vous pique les yeux, <em>drop me a line</em>.</p>
+<h2 id="hello-world">Hello world</h2>
+<p>Traditionnellement, on démarre avec un petit <em>hello world</em>. En <a href="http://www.rust-lang.org">rust</a> ça donne ça:</p>
+<pre style="background-color:#272822;">
+<span style="font-style:italic;color:#66d9ef;">fn </span><span style="color:#a6e22e;">main</span><span style="color:#f8f8f2;">() {
+println!(</span><span style="color:#e6db74;">&quot;Hello World&quot;</span><span style="color:#f8f8f2;">);
+}
+</span></pre>
+<p>Ce n'est pas très marrant.
+Ce qui serait beaucoup plus intéressant serait d'avoir un programme qui évolue pour écrire de lui-même le fameux <em>hello world</em>.</p>
+<h2 id="algorithme-genetique">Algorithme génétique</h2>
+<p>Les algorithmes génétiques sont le plus souvent utilisés pour résoudre des problèmes d'optimisation.
+Leur gros avantage est qu'ils n'ont pas besoin de parcourir l'intégralité de l'espace des solutions, contrairement aux méthodes analytiques plus classiques.
+En contrepartie, ils ne permettent pas d'obtenir <em>la</em> solution, mais seulement une <em>bonne</em> solution.
+Néanmoins, quand il n'existe pas de méthode de résolution analytique, une <em>bonne</em> solution est souvent suffisante.</p>
+<p>Pour rappel, les algorithmes génétiques s'appuient sur le concept de sélection naturelle et la théorie de l'évolution.
+On va se retrouver avec des gènes, des chromosomes, des individus, une population.
+On va brasser tout ça pendant quelques générations, histoire que tout ce petit monde se reproduise et <em>paf!</em> on a notre mâle alpha: l'individu optimal (la solution à notre problème).</p>
+<p><img src="https://i.giphy.com/YmUDg8P7O4iR2.gif" alt="Gif d'un mec qui se coince dans une motoneige" /></p>
+<blockquote>
+<p>Un bel exemple de sélection naturelle</p>
+</blockquote>
+<p>Un algorithme génétique se décompose classiquement en 3 étapes:</p>
+<ol>
+<li>initialisation</li>
+<li>sélection</li>
+<li>reproduction (parfois décomposé en crossover puis mutation)</li>
+</ol>
+<p>On répète les étapes 2 &amp; 3 tant qu'on est pas satisfait du résultat. On peut chercher à atteindre une génération en particulier ou minimiser une erreur.</p>
+<p>Clairement, afficher <em>hello world</em> ne fait pas partie des problèmes pour lesquels les algorithmes génétiques sont pertinents.
+Mais on s'en fout on est des rebelles.
+Gardez cependant à l'esprit qu'on va ici un peu détourner l'algo génétique.
+Vous vous doutez bien que ça permet de faire des trucs bien plus <em>badass</em> que d'afficher un message.</p>
+<h2 id="ecris-moi-hello-world">Écris-moi <em>hello world</em></h2>
+<p>Rappel de notre objectif: afficher <em>hello world</em>, mais de manière indirecte.
+Appelons cette chaîne de caractères <em>target</em>, c'est l'idéal à atteindre.</p>
+<h3 id="modelisation-du-probleme">Modélisation du problème</h3>
+<p>On modélise le problème de la façon suivante:</p>
+<ul>
+<li>La solution est une chaîne de caractères de longueur identique à <em>target</em>. Dans notre univers, chaque chaîne de caractères correspond à un <a href="https://fr.wikipedia.org/wiki/Chromosome">chromosome</a>.</li>
+<li>Par extension, chaque caractère de la chaîne correspond à un <a href="https://fr.wikipedia.org/wiki/G%C3%A8ne">gène</a>.</li>
+<li>Un individu est porteur d'un chromosome.</li>
+<li>Une population est constituée de plusieurs individus.</li>
+</ul>
+<p>Le fait qu'un individu ne soit porteur que d'un unique chromosome peut paraître inutile: en réalité on lui attribue également un score.
+Rien à voir avec le parallèle biologique, c'est propre à l'implémentation.</p>
+<h3 id="selection">Sélection</h3>
+<p>Pourquoi donner un score à nos individus? Pour les classer et les sélectionner.</p>
+<p>Nous allons partir avec une population initiale constituée d'individus générés aléatoirement: avec des chromosomes du style &quot;H&quot;#3NyWGvRmr&quot;.
+L'idée c'est de faire se reproduire les individus pour combiner leurs chromosomes et, de génération en génération, améliorer le score des meilleurs individus.
+Jusqu'à arriver au point où: <em>chromosome du meilleur individu</em> = <em>target</em>.</p>
+<p>Pour déterminer le score de nos individus, on va calculer leur <a href="https://fr.wikipedia.org/wiki/Distance_de_Levenshtein">distance de Levenshtein</a> par rapport à notre objectif (<em>target</em>).</p>
+<p>Wikipedia nous dit:</p>
+<blockquote>
+<p>La distance de Levenshtein est égale au nombre minimal de caractères qu'il faut supprimer, insérer ou remplacer pour passer d’une chaîne à l’autre.</p>
+</blockquote>
+<p>Par exemple, la distance entre &quot;chat&quot; et &quot;chien&quot; est 3. On transforme &quot;chat&quot; en &quot;chien&quot; en remplaçant &quot;at&quot; par &quot;ie&quot; et en ajoutant &quot;n&quot;: 3 modifications.</p>
+<p>En gros, on va quantifier le nombre de modifications nécessaires pour atteindre <em>target</em>.
+Le meilleur élément sera celui pour lequel la distance de Levenshtein à <em>target</em> sera nulle.</p>
+<p>D'un problème de chaînes de caractères, on se retrouve maintenant avec un problème de recherche d'extremum.
+C'est là que les algorithmes génétiques sont vraiment utiles.</p>
+<h2 id="let-s-get-our-hands-dirty">Let's get our hands dirty</h2>
+<p>Il n'y a rien d'extravagant dans l'implémentation en <a href="http://www.rust-lang.org">rust</a>, cependant certains points de détails m'ont amenés à creuser la doc.
+Le code dans son intégralité est disponible sur <a href="https://github.com/greizgh/hello-rust">github</a>.</p>
+<h3 id="individu">Individu</h3>
+<p>Un individu est constitué d'un chromosome et d'un score:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">#[derive(Clone,Eq,PartialEq,PartialOrd)]
+</span><span style="font-style:italic;color:#66d9ef;">struct </span><span style="color:#f8f8f2;">Individual {
+chromosome: String,
+fitness: </span><span style="font-style:italic;color:#66d9ef;">i32</span><span style="color:#f8f8f2;">,
+}
+</span></pre>
+<p><a href="http://rustbyexample.com/trait/derive.html">derive</a> est un attribut sur la structure <em>Individual</em>, cela permet de demander à <a href="http://www.rust-lang.org">rust</a> de fournir une implémentation basique de quelques <em>traits</em>.
+Ici on veut pouvoir copier un <em>Individual</em> (<strong>Clone</strong>) et le trier (<strong>Eq</strong>, <strong>PartialEq</strong>, <strong>PartialOrd</strong>).
+Les <em>traits</em> ainsi ajoutés sont très basiques et demandent de définir des implémentations à la main.</p>
+<p>Pour pouvoir classer nos individus, on va implémenter la méthode <strong>cmp</strong> du <em>trait</em> <code>std::cmp::Ord &lt;https://doc.rust-lang.org/std/cmp/trait.Ord.html&gt;</code>_:</p>
+<pre style="background-color:#272822;">
+<span style="font-style:italic;color:#66d9ef;">impl </span><span style="color:#f8f8f2;">std::cmp::Ord </span><span style="color:#f92672;">for </span><span style="color:#f8f8f2;">Individual {
+</span><span style="font-style:italic;color:#66d9ef;">fn </span><span style="color:#a6e22e;">cmp</span><span style="color:#f8f8f2;">(</span><span style="color:#f92672;">&amp;</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">other</span><span style="color:#f8f8f2;">: </span><span style="color:#f92672;">&amp;</span><span style="font-style:italic;color:#66d9ef;">Self</span><span style="color:#f8f8f2;">) -&gt; std::cmp::Ordering {
+self.fitness.</span><span style="color:#66d9ef;">cmp</span><span style="color:#f8f8f2;">(</span><span style="color:#f92672;">&amp;</span><span style="color:#f8f8f2;">other.fitness)
+}
+}
+</span></pre>
+<p>L'implémentation d'une méthode s'effectue à l'aide du mot-clé <strong>impl</strong> en précisant éventuellement le <em>trait</em> associé.
+Il est également possible d'implémenter une méthode, sans faire référence à un <em>trait</em>.</p>
+<p>C'est ce qui est fait pour la méthode <em>new</em> de <em>Individual</em> (en <a href="http://www.rust-lang.org">rust</a> cette méthode est par convention utilisée comme un constructeur):</p>
+<pre style="background-color:#272822;">
+<span style="font-style:italic;color:#66d9ef;">impl </span><span style="color:#f8f8f2;">Individual {
+</span><span style="font-style:italic;color:#66d9ef;">fn </span><span style="color:#a6e22e;">new</span><span style="color:#f8f8f2;">&lt;S: Into&lt;String&gt;&gt;(</span><span style="font-style:italic;color:#fd971f;">s</span><span style="color:#f8f8f2;">: S) -&gt; Individual {
+Individual {chromosome: s.</span><span style="color:#66d9ef;">into</span><span style="color:#f8f8f2;">(), fitness: </span><span style="color:#ae81ff;">0</span><span style="color:#f8f8f2;">}
+}
+}
+</span></pre>
+<p>Cette méthode est assez évidente, elle permet de créer un individu avec un chromosome donné.
+Initialement, elle était implémentée comme <code>new(s: &amp;str) -&gt; Individual</code>.
+Le problème avec ça c'est qu'il fallait transformer des <em>String</em> en <em>&amp;str</em>, opération peu coûteuse, pour ensuite retransformer les <em>&amp;str</em> en <em>String</em>, une opération plus coûteuse.</p>
+<p>En même temps, <a href="http://smallcultfollowing.com/rust-int-variations/imem-umem/guide-strings.html">il est préférable de passer des &amp;str plutôt que des String</a>,
+ce qui serait top serait de pouvoir manger des deux!</p>
+<p>C'est ce que permet de faire <strong>Into</strong>: c'est un trait qui expose une méthode de conversion.
+Ça tombe bien puisque le trait <em>Into<String></em> est implémenté pour le type <em>&amp;str</em>.
+L'appel à <em>into()</em> nous renvoit un <em>String</em>. On limite donc le coût de conversion uniquement aux cas où <strong>s</strong> est un <em>&amp;str</em>.</p>
+<h3 id="population">Population</h3>
+<p>La population ressemble à ça:</p>
+<pre style="background-color:#272822;">
+<span style="font-style:italic;color:#66d9ef;">struct </span><span style="color:#f8f8f2;">Population&lt;</span><span style="color:#f92672;">&#39;a</span><span style="color:#f8f8f2;">&gt; {
+mutation_rate: </span><span style="font-style:italic;color:#66d9ef;">f32</span><span style="color:#f8f8f2;">,
+crossover_rate: </span><span style="font-style:italic;color:#66d9ef;">f32</span><span style="color:#f8f8f2;">,
+generation: </span><span style="font-style:italic;color:#66d9ef;">i32</span><span style="color:#f8f8f2;">,
+individuals: Vec&lt;Individual&gt;,
+fitness: </span><span style="color:#f92672;">&amp;&#39;a </span><span style="color:#f8f8f2;">(Fn(</span><span style="color:#f92672;">&amp;</span><span style="color:#f8f8f2;">Individual) -&gt; </span><span style="font-style:italic;color:#66d9ef;">i32</span><span style="color:#f8f8f2;">),
+}
+</span></pre>
+<p>On retrouve quelques paramètres permettant de jouer sur la reproduction des individus:</p>
+<ul>
+<li><strong>mutation_rate</strong>: le taux de mutation, correspondant à la probabilité pour un gène lors de la reproduction de muter</li>
+<li><strong>crossover_rate</strong>: la probabilité pour un gène d'être à l'origine d'un enjambement_.</li>
+</ul>
+<p><strong>generation</strong> est un bête compteur, pour savoir à quelle génération en est la population.</p>
+<p>Le plus intéressant est <em>fitness</em>, décomposons la ligne:</p>
+<ul>
+<li><strong>&amp;</strong> correspond à une référence</li>
+<li><strong>Fn(&amp;Individual) -&gt; i32</strong> correspond au type d'une fonction prenant une référence vers un individu et retournant un entier</li>
+</ul>
+<p>En gros, <strong>fitness</strong> est une référence vers notre fonction évaluant le score d'un individu.
+L'avantage de passer une référence, c'est que la population n'est pas mariée à Levenshtein.
+Si demain on veut évaluer nos individus différemment, pas besoin de toucher à la population.
+L'autre truc cool, c'est que <strong>fitness</strong> peut être (et sera) une référence vers une <a href="https://doc.rust-lang.org/book/closures.html">closure</a>.</p>
+<p>On a pas encore parlé du <strong>'a</strong>: il s'agit d'une durée de vie (<a href="https://doc.rust-lang.org/book/lifetimes.html">lifetime</a>).
+Comme évoqué plus haut, <a href="http://www.rust-lang.org">rust</a> ambitionne d'être un langage <em>sûr</em>.
+Ce que propose rust, c'est de vérifier statiquement qu'on ne va pas se tirer une balle dans le pied en tripotant des variables qui n'existent plus.</p>
+<p>Ici notre population conserve une référence vers une <a href="https://doc.rust-lang.org/book/closures.html">closure</a>.
+Dans ce cas, rust s'assure seul que la référence sera valide sur toute la vie de l'instance de <em>Population</em>.
+Le problème, c'est dans le cas d'une référence vers une instance de <em>Population</em>:
+comment s'assurer que la référence vers la closure ne soit pas désallouée avant la fin de vie de l'instance de <em>Population</em>?</p>
+<p>C'est là que rust nous demande gentiment de lui filer un coup de main en précisant un <a href="https://doc.rust-lang.org/book/lifetimes.html">lifetime</a>.
+Quand on écrit <code>struct Population&lt;'a&gt;</code>, on indique à rust que Population a une durée de vie <strong>a</strong>.
+Quand on écrit <code>fitness: &amp;'a ...</code>, on indique à rust que cette référence doit vivre au moins aussi longtemps que <em>Population</em>.</p>
+<h3 id="selection-reproduction-mutation">Sélection - Reproduction - Mutation</h3>
+<p>Rien de trop particulier, par rapport à <a href="http://www.rust-lang.org">rust</a>.
+Un algorithme génétique, ça ressemble quand même vachement à un autre algorithme génétique...
+On a nos briques de base, il ne reste qu'à implémenter deux trois méthodes pour que ça roule.</p>
+<ul>
+<li><a href="https://github.com/greizgh/hello-rust/blob/master/src/main.rs#L36">Individual::new_random</a>: pour générer un nouvel individu avec un chromosome aléatoire.</li>
+<li><a href="https://github.com/greizgh/hello-rust/blob/master/src/main.rs#L42">Individual::mutate</a>: pour faire muter les gènes d'un individu.</li>
+<li><a href="https://github.com/greizgh/hello-rust/blob/master/src/main.rs#L92">Population::crossover</a>: qui prend deux individus et brasse leurs chromosomes.</li>
+<li><a href="https://github.com/greizgh/hello-rust/blob/master/src/main.rs#L110">Population::breed</a>: c'est le coeur de la sélection et de la reproduction:
+on garde les 80% meilleurs individus et on les reproduit deux à deux (crossover).
+Une passe est faite pour éventuellement faire muter les individus.
+On complète ensuite la population par des individus générés aléatoirement, c'est important pour garder une taille de population constante.</li>
+</ul>
+<h2 id="pour-finir">Pour finir</h2>
+<p>Tout ça pour afficher un pauvre <em>hello world</em>!
+Ça aura au moins servi à plonger dans <a href="http://www.rust-lang.org">rust</a>, et avoir le plaisir de faire évoluer quelques chromosomes. Comme les pokémons mais en plus vénère.</p>
+<p>Pour chaque génération, on affiche la taille de la population, le meilleur élément et sa distance à l'objectif entre parenthèses::</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">Generation 0, size: 200	Fittest: @ell#&lt;r.78*S (9)
+</span><span style="color:#f8f8f2;">Generation 1, size: 200	Fittest: p-ll#N&gt;.rH*Q (9)
+</span><span style="color:#f8f8f2;">Generation 2, size: 200	Fittest: JeTlWKror8bS (8)
+</span><span style="color:#f8f8f2;">Generation 3, size: 200	Fittest: JellWK&gt;o#%bS (8)
+</span><span style="color:#f8f8f2;">Generation 4, size: 200	Fittest: QeTlWKror8bS (8)
+</span><span style="color:#f8f8f2;">Generation 5, size: 200	Fittest: H-ll#N&gt;orLl] (7)
+</span><span style="color:#f8f8f2;">Generation 6, size: 200	Fittest: HeloooWarA@W (6)
+</span><span style="color:#f8f8f2;">Generation 7, size: 200	Fittest: H-loooWorLl] (6)
+</span><span style="color:#f8f8f2;">Generation 8, size: 200	Fittest: &#39;eTlx ho,ld! (5)
+</span><span style="color:#f8f8f2;">Generation 9, size: 200	Fittest: &#39;ello &gt;orllS (4)
+</span><span style="color:#f8f8f2;">Generation 10, size: 200	Fittest: x-llo &gt;orllS (5)
+</span><span style="color:#f8f8f2;">Generation 11, size: 200	Fittest: xello WorllS (3)
+</span><span style="color:#f8f8f2;">Generation 12, size: 200	Fittest: HellooWorl@&gt; (3)
+</span><span style="color:#f8f8f2;">Generation 13, size: 200	Fittest: HelgooWorl@&gt; (4)
+</span><span style="color:#f8f8f2;">Generation 14, size: 200	Fittest: xelgo Worll&gt; (4)
+</span><span style="color:#f8f8f2;">Generation 15, size: 200	Fittest: Helgo Worl@&gt; (3)
+</span><span style="color:#f8f8f2;">Generation 16, size: 200	Fittest: HellA Worl@&gt; (3)
+</span><span style="color:#f8f8f2;">Generation 17, size: 200	Fittest: Hello WorGdS (2)
+</span><span style="color:#f8f8f2;">Generation 18, size: 200	Fittest: Hello WorldS (1)
+</span><span style="color:#f8f8f2;">Generation 19, size: 200	Fittest: Hello World! (0)
+</span></pre>
+<p>Voilà voilà, <a href="http://www.rust-lang.org">rust</a> c'est marrant à utiliser.
+Ça impose la rigueur.</p>
+<p>On sent que le langage est jeune: ça bouge encore pas mal, même si l'objectif est de ne pas casser la librairie standard.
+Heureusement, <a href="https://doc.crates.io/">cargo</a>, l'outil de construction de projet et gestion de dépendances tient ses promesses.</p>
+<p>Pour arriver à stabiliser la lib standard, le choix a été fait de limiter sa taille en externalisant ce qui pouvait l'être dans des packages distincts.
+Dans le monde rust, ces packages sont des <a href="https://doc.rust-lang.org/book/crates-and-modules.html">crates</a> et on les gère avec <a href="https://doc.crates.io/">cargo</a>.</p>
+<p>On se retrouve avec un écosystème dynamique et déjà bien vivant.
+Les outils sont jeunes mais tiennent la route: on peut déjà bien s'amuser.</p>
+
+    </div>
+  </article>
+</div>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+        <a class="link black hover-silver dib h2 w2" href="https://gitlab.com/greizgh" title="GitLab">
+          <svg fill="currentColor" viewBox="0 0 586 559">
+            <path d="M461.514,298.355l-18.049-55.587c0.008,0.025,0.011,0.051,0.019,0.076c-0.009-0.029-0.014-0.058-0.022-0.087
+                     c-0.001-0.002-0.001-0.003-0.001-0.005c0-0.001,0-0.002,0-0.002l-35.83-110.31c-1.96-5.811-7.353-9.711-13.536-9.663
+                     c-6.201,0.032-11.446,3.857-13.364,9.748L346.721,237.23H239.408l-34.074-104.712c-1.916-5.886-7.162-9.71-13.362-9.742
+                     c-0.025,0-0.049,0-0.075,0c-6.105,0-11.509,3.876-13.49,9.752l-35.732,110.211l-0.005,0.014c0,0.001,0,0.002,0,0.003
+                     c-0.009,0.028-0.013,0.056-0.022,0.084c0.008-0.025,0.011-0.051,0.019-0.076l-18.115,55.591c-2.725,8.392,0.232,17.512,7.36,22.697
+                     L288.328,434.7c0.023,0.017,0.049,0.027,0.072,0.044c0.067,0.048,0.132,0.097,0.2,0.142c-0.064-0.043-0.124-0.09-0.187-0.134
+                     c0,0,0-0.001-0.001-0.001c0.01,0.008,0.022,0.013,0.033,0.02c0.009,0.006,0.018,0.01,0.027,0.016
+                     c0.001,0.001,0.002,0.002,0.004,0.003c0.242,0.168,0.493,0.322,0.753,0.463c0.036,0.02,0.068,0.045,0.104,0.064
+                     c0.001,0,0.001,0.001,0.002,0.001c0.022,0.011,0.042,0.025,0.064,0.036c0.017,0.008,0.035,0.013,0.051,0.021
+                     c0.012,0.006,0.025,0.01,0.037,0.015c0.029,0.014,0.061,0.023,0.09,0.038c0.136,0.065,0.279,0.118,0.419,0.175
+                     c0.131,0.054,0.258,0.117,0.392,0.164c0.006,0.002,0.011,0.005,0.017,0.007c0.022,0.008,0.042,0.019,0.065,0.027
+                     c0.028,0.01,0.055,0.021,0.083,0.03c0.011,0.003,0.022,0.005,0.033,0.008c0.035,0.011,0.073,0.016,0.108,0.026
+                     c0.013,0.004,0.028,0.006,0.042,0.01c0.188,0.057,0.383,0.098,0.577,0.141c0.076,0.017,0.149,0.041,0.226,0.055
+                     c0.011,0.002,0.021,0.006,0.033,0.008c0.025,0.005,0.048,0.014,0.074,0.018c0.041,0.007,0.081,0.02,0.123,0.026
+                     c0.033,0.005,0.067,0.003,0.1,0.008c0.006,0.001,0.011,0,0.017,0.001c0.002,0,0.003,0,0.005,0c0.369,0.053,0.743,0.09,1.124,0.09
+                     c0.002,0,0.004,0,0.007,0l0,0c0.001,0,0.002,0,0.002,0c0,0,0.001,0,0.001,0c0.001,0,0.002,0,0.003,0
+                     c0.382,0,0.756-0.037,1.126-0.09c0.001,0,0.003,0,0.004,0c0.006-0.001,0.012,0,0.018-0.001c0.033-0.005,0.068-0.003,0.101-0.008
+                     c0.042-0.007,0.082-0.019,0.124-0.026c0.025-0.004,0.048-0.013,0.073-0.018c0.011-0.002,0.021-0.006,0.032-0.008
+                     c0.078-0.015,0.153-0.039,0.231-0.056c0.191-0.042,0.383-0.083,0.57-0.139c0.013-0.004,0.026-0.005,0.039-0.009
+                     c0.037-0.011,0.075-0.016,0.112-0.027c0.011-0.004,0.023-0.005,0.034-0.008c0.029-0.009,0.057-0.021,0.085-0.031
+                     c0.022-0.008,0.042-0.019,0.064-0.027c0.006-0.002,0.011-0.005,0.017-0.007c0.142-0.05,0.276-0.116,0.415-0.173
+                     c0.129-0.054,0.261-0.102,0.387-0.162c0.031-0.015,0.064-0.024,0.094-0.039c0.012-0.006,0.026-0.01,0.038-0.016
+                     c0.017-0.008,0.035-0.013,0.052-0.022c0.023-0.012,0.045-0.026,0.067-0.037c0,0,0.001,0,0.001-0.001
+                     c0.037-0.019,0.07-0.046,0.107-0.066c0.258-0.14,0.508-0.293,0.749-0.46c0.019-0.013,0.041-0.023,0.061-0.037
+                     c0.005-0.004,0.011-0.006,0.016-0.01c0.023-0.017,0.05-0.028,0.073-0.045l156.44-113.65
+                     C461.282,315.867,464.239,306.747,461.514,298.355z M394.194,142.774l30.68,94.456h-61.36L394.194,142.774z M419.501,253.202
+                     l-12.519,16.041L314.648,387.55l43.677-134.348H419.501z M285.428,430.707C285.428,430.707,285.428,430.707,285.428,430.707
+                     c0.008,0.024,0.021,0.046,0.029,0.071C285.449,430.753,285.436,430.731,285.428,430.707z M271.42,387.558L166.624,253.202l0,0
+                     h61.18L271.42,387.558z M191.875,142.773l30.737,94.457h-61.36L191.875,142.773z M141.304,308.133
+                     c-1.516-1.103-2.144-3.05-1.563-4.838l13.466-41.325l98.67,126.502L141.304,308.133z M288.053,434.489
+                     c-0.031-0.025-0.061-0.052-0.091-0.078c-0.006-0.005-0.012-0.012-0.019-0.017c-0.06-0.05-0.119-0.101-0.177-0.153
+                     c-0.114-0.099-0.226-0.2-0.333-0.306c0.009,0.008,0.019,0.015,0.028,0.023c0.012,0.011,0.025,0.02,0.037,0.031
+                     c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
+                     C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
+                     M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
+		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+    
+    
+  </body>
+
+</html>

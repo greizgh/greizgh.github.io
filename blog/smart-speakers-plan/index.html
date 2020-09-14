@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Smart speakers project</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="Where we design a home-made multiroom sound solution" />
+
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-40-ns pa3">
+      
+<div class="flex justify-center">
+  <article>
+    <h1 class="orange lh-title">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;smart-speakers-plan&#x2F;" class="link hover-black">
+        Smart speakers project
+      </a>
+    </h1>
+    <div class="w-100 tr f6">
+      <time><small>🖋️ 20&#x2F;07&#x2F;2020</small></time>
+    </div>
+    <div class="lh-copy measure-wide">
+      <p>I've been wanting to upgrade my sound listening experience since I moved in.
+My current stereo system is a millennium era thing boasting a dual tape player and a 3 CDs tray:</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<div class="tc">
+  <img src=".&#x2F;stereo.jpg" class="mw-100" alt="stereo system">
+  <p class="i mt0">The beast</p>
+</div>
+<p>As much as I like its 2000s look and feel, it does not meet my current expectations:</p>
+<ul>
+<li>CD tray is broken and will eat anything we feed it (when it opens)</li>
+<li>we recovered a tape in it containing some old radio recording (real throwback, big fun)</li>
+<li>listening to spotify is done through the auxiliary input from an old android tablet</li>
+<li>the tuner crackles unless you open a window</li>
+</ul>
+<p>I'm sure we can do better in 2020, let's start with some tests and a prototype.</p>
+<h2 id="ideal-setup">Ideal setup</h2>
+<p>I used to play music on my computer using <a href="https://www.musicpd.org/">MPD</a>.
+This is a really nice piece of software, but I don't expect my SO to launch a terminal to skip a track.
+(There are really polished MPD clients but you get the idea)</p>
+<p>Although having multiple application for different sources is acceptable (mpd/spotify), the system should stay reasonably easy to use by a non tech-savvy.</p>
+<p>Being able to listen to spotify in a room while a webradio is playing in the kitchen is a must-have.
+Speakers should be independent and receive stream over wifi, although I don't mind having to plug them to AC.</p>
+<p>From those few requirements, I imagined the following hardware:</p>
+<ul>
+<li>a pair of speakers equipped with some control board and a DAC+amp each;</li>
+<li>a master computer with attached hard-drive streaming to each speaker;</li>
+</ul>
+<p>That's fairly easy to source, and cost effective (considering the cost of <em>Smart speakers</em> off the shelf).</p>
+<p>A friend of mine had two old speakers waiting for a second life.
+These are Sony speakers, they need a design refresh to better match our interior but work perfectly fine.</p>
+<div class="tc">
+  <img src=".&#x2F;speakers.jpg" class="mw-100" alt="picture of Sony speakers">
+  <p class="i mt0">They had a previous life</p>
+</div>
+<p>I'm sure they will look <em>glorious</em> with some reflective vinyl and a flashy green fabric...</p>
+<p>As a bonus, this setup would perfectly handle more than 2 speakers.</p>
+<h2 id="hardware">Hardware</h2>
+<p>I already had a raspberry pi 3 lying around and a spare HDD, that will make a perfect control station.</p>
+<p>As for the speaker board + amp, I chose a <a href="https://www.raspberrypi.org/products/raspberry-pi-zero-w/">raspberry pi 0W</a> and a <a href="https://www.hifiberry.com/shop/boards/miniamp/">miniamp</a>.</p>
+<p>The raspi is cheap enough to be a no-brainer: it can run linux and connects over wifi.
+It should have more computing power than needed to simply decode an audio stream, but this may come handy if I need more flexibility later.</p>
+<p>The miniamp is pretty cheap, has the same formfactor than the pi0 and does not require external power (it feeds on the pi's 5V).
+It's only 3W so it may not be loud enough for some situations but it's enough for a first prototype.
+I've run some tests with the speakers: volume is almost at its maximum to listen <em>actively</em>, and half for background music.</p>
+<p>Anyway, if at some point I need more power, I'll switch to the more beefy <a href="https://www.hifiberry.com/shop/boards/hifiberry-amp2/">Amp2</a>.
+This will come with a larger formfactor and requires an external power supply, I'll keep it simple for the prototype.</p>
+<h2 id="streaming-software">Streaming software</h2>
+<p>I've been monitoring what's going on in the audio streaming world for a while, here are some existing solutions:</p>
+<ul>
+<li><a href="https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Network/">pulseaudio</a> has network streaming capabilities</li>
+<li><a href="https://icecast.org/">icecast</a> can broadcast audio stream</li>
+<li><a href="https://roc-streaming.org/">ROC</a> is a promising streaming solution</li>
+<li><a href="https://github.com/badaix/snapcast">snapcast</a> allows to switch between clients and sources</li>
+</ul>
+<p>Out of those I only tested pulseaudio (already available on my computers, easy to setup) and snapcast.
+While ROC and icecast seems to do a good job, they don't help with multiple sources. While the source selection might be doable on pulseaudio level, snapcast is providing it out of the box and I'm lazy.</p>
+<h3 id="crash-test">Crash test</h3>
+<p>The first test I ran was with pulseaudio, once you publish your receiver and enable network discovery, streaming is fairly straightforward (refer to the <a href="https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Network/#index2h3">documentation</a>):</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">pactl load-module module-null-sink sink_name=rtp
+pactl load-module module-rtp-send source=rtp.monitor
+</span></pre>
+<p>Select the &quot;rtp&quot; output and the player should start... after a while... and play something...</p>
+<p>I remember testing pulseaudio streaming capability few years back and it was somewhat unusable due to the latency.
+It turns out that things have not changed much (although I'm on a much more reliable wifi now).</p>
+<p>This prompted me to test snapcast, which goes beyond streaming and also manage multiple sources and clients.</p>
+<p>According to its readme, snapcast is perfect for my use case:</p>
+<blockquote>
+<p>Snapcast is a multiroom client-server audio player, where all clients are time synchronized with the server to play perfectly synced audio.</p>
+</blockquote>
+<p>And indeed, I configured <a href="https://github.com/badaix/snapcast/blob/master/doc/player_setup.md#mpd">MPD as a source</a>, started to play a webradio and... was disappointed.</p>
+<p>Well, it couldn't work on the first attempt, right?
+It turns out when setting up MPD to output to a pipe, I chose a location snapcast didn't have access to.</p>
+<p>Once MPD playing, snapcast server up and running, I started a client:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">snapclient -h 192.168.X.X
+</span></pre>
+<p>And was delighted to ear some music.</p>
+<p>Now, I can stream to one client, but are all the clients in sync?
+The <a href="https://github.com/badaix/snapdroid">snapdroid</a> Android client to manage the server embeds a convenient test client.
+And indeed, clients are playing in sync (as far as I can ear).</p>
+<h2 id="control-system">Control system</h2>
+<p>Now imagine: you are still waiting to receive the hardware, you've ran enough test to know which software solution you'll setup. What do you do?</p>
+<p>Build a tailor made sd-image for the control raspi!</p>
+<p>I'm in love with <a href="https://nixos.org/">nix</a> and it turns out you can create an installer image quite easily.
+Note that this is an <strong>installer</strong> image (used to install in-place), there is no convenient way to build a <strong>system</strong> image (the one you'll run).</p>
+<p>This has been covered <a href="https://rbf.dev/blog/2020/05/custom-nixos-build-for-raspberry-pis/">in other blogs before</a> but the proposed docker solution seems less than ideal.</p>
+<p>I very much prefer the qemu and binfmt approach where the host system delegates aarch64 binary handling to a qemu VM.
+Theoretically, configuring your nixos matching with the following is enough to be able to build the rpi3 image:</p>
+<pre style="background-color:#272822;">
+<span style="font-style:italic;color:#fd971f;">boot</span><span style="color:#f92672;">.</span><span style="font-style:italic;color:#fd971f;">binfmt</span><span style="color:#f92672;">.</span><span style="font-style:italic;color:#fd971f;">emulatedSystems </span><span style="background-color:#f92672;color:#f8f8f0;">=</span><span style="color:#f8f8f2;"> [ </span><span style="color:#e6db74;">&quot;aarch64-linux&quot; </span><span style="color:#f8f8f2;">]</span><span style="background-color:#f92672;color:#f8f8f0;">;</span><span style="color:#f8f8f2;">
+</span></pre>
+<p>However, I faced some <code>Cannot allocate memory</code> errors.
+This was not a lack of memory though, but rather a bug with qemu 4.2.0.</p>
+<p>Fortunately, nixos unstable packages qemu5 which does not have this issue.
+An overlay later, and the build started correctly.</p>
+<p>Now that the host machine can build for aarch64, let's go and initialize a git repository for the image description.</p>
+<p>First things first, define a nix-shell:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">{ </span><span style="font-style:italic;color:#fd971f;">pkgs </span><span style="color:#f92672;">? </span><span style="color:#66d9ef;">import </span><span style="color:#e6db74;">&lt;nixpkgs&gt; </span><span style="color:#f8f8f2;">{ } }:
+</span><span style="color:#f92672;">with </span><span style="font-style:italic;color:#fd971f;">pkgs</span><span style="color:#f8f8f2;">;
+</span><span style="font-style:italic;color:#fd971f;">mkShell </span><span style="color:#f8f8f2;">{ </span><span style="color:#a6e22e;">buildInputs </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">[ </span><span style="font-style:italic;color:#fd971f;">nixos-generators </span><span style="color:#f8f8f2;">]; }
+</span></pre>
+<p>We'll use <a href="https://github.com/nix-community/nixos-generators">nixos-generators</a> to build the image.
+For some reason I did not bother investigate, the <a href="https://nixos.wiki/wiki/NixOS_on_ARM#Build_your_own_image">recommended <code>nix-build</code> way</a> was giving me an unallowed system error.</p>
+<p>The installer description looks like this:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">{ </span><span style="font-style:italic;color:#fd971f;">pkgs</span><span style="color:#f92672;">, </span><span style="font-style:italic;color:#fd971f;">lib</span><span style="color:#f92672;">, ... </span><span style="color:#f8f8f2;">}: {
+  </span><span style="color:#a6e22e;">sdImage</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">compressImage </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">false</span><span style="color:#f8f8f2;">;
+  </span><span style="color:#a6e22e;">imports </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">[ </span><span style="color:#e6db74;">./secrets/root.nix ./secrets/wifi.nix </span><span style="color:#f8f8f2;">];
+
+  </span><span style="color:#a6e22e;">networking</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">hostName </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;setup&quot;</span><span style="color:#f8f8f2;">;
+  </span><span style="color:#a6e22e;">networking</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">wireless</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">enable </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+
+  </span><span style="color:#75715e;"># Enable SSH in the boot process.
+  </span><span style="color:#a6e22e;">systemd</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">services</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">sshd</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">wantedBy </span><span style="color:#f92672;">= </span><span style="font-style:italic;color:#fd971f;">lib</span><span style="color:#f92672;">.</span><span style="font-style:italic;color:#fd971f;">mkForce </span><span style="color:#f8f8f2;">[ </span><span style="color:#e6db74;">&quot;multi-user.target&quot; </span><span style="color:#f8f8f2;">];
+  </span><span style="color:#a6e22e;">systemd</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">services</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">wpa_supplicant</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">wantedBy </span><span style="color:#f92672;">=
+    </span><span style="font-style:italic;color:#fd971f;">lib</span><span style="color:#f92672;">.</span><span style="font-style:italic;color:#fd971f;">mkOverride </span><span style="color:#ae81ff;">10 </span><span style="color:#f8f8f2;">[ </span><span style="color:#e6db74;">&quot;default.target&quot; </span><span style="color:#f8f8f2;">];
+}
+</span></pre>
+<p>Once booted, the resulting image will automatically connect to the wifi network and allow me to ssh as root with my usual key.</p>
+<p>Now to build the image, let's invoke:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">nixos-generate -f sd-aarch64-installer --system aarch64-linux -c sd-installer.nix
+</span></pre>
+<p>Burn the resulting image on some SD card, a <code>dd</code> later and I'm waiting for the pi to boot.</p>
+<p>This is <strong>extremely</strong> convenient, because once the pi is booted and accessible over SSH I can simply deploy its configuration with <a href="https://github.com/NixOS/nixops">nixops</a> (another fantastic project).</p>
+<p>And in now time there is a running snapserver:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">{ </span><span style="font-style:italic;color:#fd971f;">config</span><span style="color:#f92672;">, </span><span style="font-style:italic;color:#fd971f;">pkgs</span><span style="color:#f92672;">, ... </span><span style="color:#f8f8f2;">}: {
+  </span><span style="color:#a6e22e;">services</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">mpd </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">{
+    </span><span style="color:#a6e22e;">enable </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+    </span><span style="color:#75715e;"># /mnt/data is a HDD
+    </span><span style="color:#a6e22e;">musicDirectory </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;/mnt/data/music&quot;</span><span style="color:#f8f8f2;">;
+    </span><span style="color:#a6e22e;">dataDir </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;/mnt/data/mpd&quot;</span><span style="color:#f8f8f2;">;
+    </span><span style="color:#a6e22e;">network</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">listenAddress </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;192.168.X.X&quot;</span><span style="color:#f8f8f2;">;
+    </span><span style="color:#a6e22e;">extraConfig </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&#39;&#39;
+      audio_output {
+          type            &quot;fifo&quot;
+          name            &quot;snapcast&quot;
+          path            &quot;/run/snapserver/mpd&quot;
+          format          &quot;48000:16:2&quot;
+          mixer_type      &quot;software&quot;
+      }
+    &#39;&#39;</span><span style="color:#f8f8f2;">;
+  };
+  </span><span style="color:#75715e;"># Open mpd service
+  </span><span style="color:#a6e22e;">networking</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">firewall</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">allowedTCPPorts </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">[ </span><span style="color:#ae81ff;">6600 </span><span style="color:#f8f8f2;">];
+
+  </span><span style="color:#a6e22e;">services</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">snapserver </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">{
+    </span><span style="color:#a6e22e;">enable </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
+    </span><span style="color:#a6e22e;">streams </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">{
+      </span><span style="color:#a6e22e;">mpd </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">{
+        </span><span style="color:#a6e22e;">type </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;pipe&quot;</span><span style="color:#f8f8f2;">;
+        </span><span style="color:#a6e22e;">location </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;/run/snapserver/mpd&quot;</span><span style="color:#f8f8f2;">;
+        </span><span style="color:#a6e22e;">sampleFormat </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;48000:16:2&quot;</span><span style="color:#f8f8f2;">;
+        </span><span style="color:#a6e22e;">codec </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;pcm&quot;</span><span style="color:#f8f8f2;">;
+      };
+    };
+  };
+}
+</span></pre><h2 id="what-s-next">What's next?</h2>
+<p>The shipment with the pi0s is still in transit, so for now I can only prepare for final assembly:</p>
+<ul>
+<li>rpi0s will be handled the same way than the control one: nixos-generators for the base image then nixops deployment;</li>
+<li>rpi0s + amp will be mounted behind each speaker. While 4 screws should do, I'm considering a 3D printed enclosure;</li>
+</ul>
+
+    </div>
+  </article>
+</div>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+        <a class="link black hover-silver dib h2 w2" href="https://gitlab.com/greizgh" title="GitLab">
+          <svg fill="currentColor" viewBox="0 0 586 559">
+            <path d="M461.514,298.355l-18.049-55.587c0.008,0.025,0.011,0.051,0.019,0.076c-0.009-0.029-0.014-0.058-0.022-0.087
+                     c-0.001-0.002-0.001-0.003-0.001-0.005c0-0.001,0-0.002,0-0.002l-35.83-110.31c-1.96-5.811-7.353-9.711-13.536-9.663
+                     c-6.201,0.032-11.446,3.857-13.364,9.748L346.721,237.23H239.408l-34.074-104.712c-1.916-5.886-7.162-9.71-13.362-9.742
+                     c-0.025,0-0.049,0-0.075,0c-6.105,0-11.509,3.876-13.49,9.752l-35.732,110.211l-0.005,0.014c0,0.001,0,0.002,0,0.003
+                     c-0.009,0.028-0.013,0.056-0.022,0.084c0.008-0.025,0.011-0.051,0.019-0.076l-18.115,55.591c-2.725,8.392,0.232,17.512,7.36,22.697
+                     L288.328,434.7c0.023,0.017,0.049,0.027,0.072,0.044c0.067,0.048,0.132,0.097,0.2,0.142c-0.064-0.043-0.124-0.09-0.187-0.134
+                     c0,0,0-0.001-0.001-0.001c0.01,0.008,0.022,0.013,0.033,0.02c0.009,0.006,0.018,0.01,0.027,0.016
+                     c0.001,0.001,0.002,0.002,0.004,0.003c0.242,0.168,0.493,0.322,0.753,0.463c0.036,0.02,0.068,0.045,0.104,0.064
+                     c0.001,0,0.001,0.001,0.002,0.001c0.022,0.011,0.042,0.025,0.064,0.036c0.017,0.008,0.035,0.013,0.051,0.021
+                     c0.012,0.006,0.025,0.01,0.037,0.015c0.029,0.014,0.061,0.023,0.09,0.038c0.136,0.065,0.279,0.118,0.419,0.175
+                     c0.131,0.054,0.258,0.117,0.392,0.164c0.006,0.002,0.011,0.005,0.017,0.007c0.022,0.008,0.042,0.019,0.065,0.027
+                     c0.028,0.01,0.055,0.021,0.083,0.03c0.011,0.003,0.022,0.005,0.033,0.008c0.035,0.011,0.073,0.016,0.108,0.026
+                     c0.013,0.004,0.028,0.006,0.042,0.01c0.188,0.057,0.383,0.098,0.577,0.141c0.076,0.017,0.149,0.041,0.226,0.055
+                     c0.011,0.002,0.021,0.006,0.033,0.008c0.025,0.005,0.048,0.014,0.074,0.018c0.041,0.007,0.081,0.02,0.123,0.026
+                     c0.033,0.005,0.067,0.003,0.1,0.008c0.006,0.001,0.011,0,0.017,0.001c0.002,0,0.003,0,0.005,0c0.369,0.053,0.743,0.09,1.124,0.09
+                     c0.002,0,0.004,0,0.007,0l0,0c0.001,0,0.002,0,0.002,0c0,0,0.001,0,0.001,0c0.001,0,0.002,0,0.003,0
+                     c0.382,0,0.756-0.037,1.126-0.09c0.001,0,0.003,0,0.004,0c0.006-0.001,0.012,0,0.018-0.001c0.033-0.005,0.068-0.003,0.101-0.008
+                     c0.042-0.007,0.082-0.019,0.124-0.026c0.025-0.004,0.048-0.013,0.073-0.018c0.011-0.002,0.021-0.006,0.032-0.008
+                     c0.078-0.015,0.153-0.039,0.231-0.056c0.191-0.042,0.383-0.083,0.57-0.139c0.013-0.004,0.026-0.005,0.039-0.009
+                     c0.037-0.011,0.075-0.016,0.112-0.027c0.011-0.004,0.023-0.005,0.034-0.008c0.029-0.009,0.057-0.021,0.085-0.031
+                     c0.022-0.008,0.042-0.019,0.064-0.027c0.006-0.002,0.011-0.005,0.017-0.007c0.142-0.05,0.276-0.116,0.415-0.173
+                     c0.129-0.054,0.261-0.102,0.387-0.162c0.031-0.015,0.064-0.024,0.094-0.039c0.012-0.006,0.026-0.01,0.038-0.016
+                     c0.017-0.008,0.035-0.013,0.052-0.022c0.023-0.012,0.045-0.026,0.067-0.037c0,0,0.001,0,0.001-0.001
+                     c0.037-0.019,0.07-0.046,0.107-0.066c0.258-0.14,0.508-0.293,0.749-0.46c0.019-0.013,0.041-0.023,0.061-0.037
+                     c0.005-0.004,0.011-0.006,0.016-0.01c0.023-0.017,0.05-0.028,0.073-0.045l156.44-113.65
+                     C461.282,315.867,464.239,306.747,461.514,298.355z M394.194,142.774l30.68,94.456h-61.36L394.194,142.774z M419.501,253.202
+                     l-12.519,16.041L314.648,387.55l43.677-134.348H419.501z M285.428,430.707C285.428,430.707,285.428,430.707,285.428,430.707
+                     c0.008,0.024,0.021,0.046,0.029,0.071C285.449,430.753,285.436,430.731,285.428,430.707z M271.42,387.558L166.624,253.202l0,0
+                     h61.18L271.42,387.558z M191.875,142.773l30.737,94.457h-61.36L191.875,142.773z M141.304,308.133
+                     c-1.516-1.103-2.144-3.05-1.563-4.838l13.466-41.325l98.67,126.502L141.304,308.133z M288.053,434.489
+                     c-0.031-0.025-0.061-0.052-0.091-0.078c-0.006-0.005-0.012-0.012-0.019-0.017c-0.06-0.05-0.119-0.101-0.177-0.153
+                     c-0.114-0.099-0.226-0.2-0.333-0.306c0.009,0.008,0.019,0.015,0.028,0.023c0.012,0.011,0.025,0.02,0.037,0.031
+                     c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
+                     C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
+                     M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
+		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+    
+    
+  </body>
+
+</html>

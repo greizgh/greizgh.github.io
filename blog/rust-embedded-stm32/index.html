@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <title>Let&#x27;s shuffle bits - Rust embarqué: jouons avec une stm32</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+
+    
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+    
+
+    
+<meta name="description" content="Mise en place d&#x27;un environnement de développement pour Rust sur cible embarquée. Faire clignoter une LED pas-à-pas sur une carte stm32" />
+
+  </head>
+
+  <body>
+    <header class="w-100 bg-dark-gray pa2 white">
+      <div class="w-80-ns center pa2">
+        <a href="/" class="link hover-orange f3 lh-solid fw6">Let&#x27;s shuffle bits</a>
+      </div>
+    </header>
+
+    <div class="center w-40-ns pa3">
+      
+<div class="flex justify-center">
+  <article>
+    <h1 class="orange lh-title">
+      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;" class="link hover-black">
+        Rust embarqué: jouons avec une stm32
+      </a>
+    </h1>
+    <div class="w-100 tr f6">
+      <time><small>🖋️ 10&#x2F;01&#x2F;2019</small></time>
+    </div>
+    <div class="lh-copy measure-wide">
+      <p>Cela fait quelques semaines qu'une petite carte embarquant un stm32 traînait sur mon étagère.</p>
+<p>Ayant récemment eu l'occasion d'assister à une <a href="https://mickcherry.io/talks/embedded_rust/embedded_rust.html">super présentation sur rust dans l'embarqué</a>,
+je n'avais plus d'excuse pour laisser cette carte prendre la poussière.</p>
+<p>C'est parti, nous allons faire clignoter une LED pas-à-pas.
+Au programme: mise en place de l'environnement de développement et découverte des outils Rust pour l'embarqué.</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<h2 id="l-engin">L'engin</h2>
+<p>La carte en question est une <a href="https://www.amazon.fr/gp/product/B01C2I7CSU/ref=oh_aui_detailpage_o02_s00?ie=UTF8&amp;psc=1">STM32F103C8T6</a> à 5€.</p>
+<div class="tc">
+  <img src=".&#x2F;board.jpg" class="mw-100" alt="L&#x27;engin">
+</div>
+<p>À ce prix là, on a:</p>
+<ul>
+<li>un CPU 32 bits à 72MHz (Cortex-M3);</li>
+<li>64K de flash (ou 128K, la spec n'est pas claire sur le sujet);</li>
+<li>20K de <a href="https://fr.wikipedia.org/wiki/Static_Random_Access_Memory">SRAM</a>;</li>
+<li>7 timers;</li>
+<li>jusqu'à 80 GPIO;</li>
+<li>un truc qui cause I2C, SPI, USART, USB;</li>
+<li>une LED connectée sur la broche PC13;</li>
+</ul>
+<p>Bref, un bon rapport fonctionnalités/prix pour qui veut un peu jouer.</p>
+<p>Attention, pour flasher la bête, on va utiliser un programmeur:
+un <a href="https://www.amazon.fr/gp/product/B01F37YMJ4/ref=oh_aui_detailpage_o01_s00?ie=UTF8&amp;psc=1">st-link v2</a> (5€ lui-aussi).</p>
+<h2 id="preparation-de-l-environnement-de-developpement">Préparation de l'environnement de développement</h2>
+<p>On a le matériel, c'est un premier pas, il faut maintenant préparer notre environnement de développement.
+<a href="https://www.rust-lang.org/tools/install">rust</a> est bien entendu un prérequis, ainsi que rustup (la solution préférée pour installer rust).</p>
+<p>Nous allons par ailleurs ajouter une cible au compilateur rustc: thumbv7m-none-eabi.
+C'est le jeu d'instructions du Cortex-M3.
+Avec rustup, rien de plus simple:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">rustup target add thumbv7m-none-eabi
+</span></pre>
+<p>Il nous faudra également <a href="https://github.com/texane/stlink">stlink</a> et gdb pour respectivement flasher et débugger la carte.</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">sudo pacman -Sy stlink arm-none-eabi-gdb
+</span></pre>
+<p>Le <a href="https://github.com/rust-embedded/wg">rust embedded devices working group</a> maintient un template d'application
+pour les cibles Cortex-M. C'est ce que nous allons utiliser, mais il nous faut pour cela la sous-commande <code>cargo-generate</code>.
+Installation express:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">cargo install cargo-generate
+</span></pre><h2 id="bootstrap-du-projet">Bootstrap du projet</h2>
+<p>Équippés de nos nouveaux outils, initialisons le projet:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">cargo generate --git https://github.com/rust-embedded/cortex-m-quickstart
+</span></pre>
+<p>Après quelques questions, on obtient un nouveau répertoire contenant le projet, à la manière d'un <code>cargo new</code>.
+La plupart des fichiers sont ceux d'un projet rust classique, mais certains d'entre eux sont issus du template <em>cortex-m-quickstart</em>:</p>
+<ul>
+<li><strong>openocd.{cfg,dbg}</strong>: ce sont les fichiers de configuration d'<a href="http://openocd.org/">openocd</a>, il ne nous intéressent pas puisque nous allons utiliser stlink;</li>
+<li><strong>.cargo/config</strong>: il s'agit de la configuration de cargo, c'est là que nous spécifions la cible par défaut du projet <em>thumbv7m-none-eabi</em>;</li>
+<li><strong>memory.x</strong>: structure de la mémoire de la plateforme cible, voir ci-dessous;</li>
+</ul>
+<p>Il est nécessaire de porter la configuration de la mémoire dans ce fichier <em>memory.x</em>,
+en reprenant les valeurs de la <a href="https://greizgh.github.io/blog/rust-embedded-stm32/en.CD00161566.pdf">datasheet</a>.
+Il nous faut en particulier:</p>
+<ul>
+<li>les offsets de départ de la mémoire flash et RAM;</li>
+<li>les tailles de ces mémoires;</li>
+</ul>
+<p>La spec nous donne 64K de flash (au minimum, ça peut être 128K) et 20K de RAM.</p>
+<div class="tc">
+  <img src=".&#x2F;memory.jpg" class="mw-100">
+  <p class="i mt0">Le mapping tiré de la datasheet nous donne la localisation des mémoires</p>
+</div>
+<ul>
+<li>mémoire flash: 0x8000000;</li>
+<li>RAM: 0x20000000;</li>
+</ul>
+<p>Configurons le fichier <strong>memory.x</strong> en conséquence:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">MEMORY
+{
+  FLASH : ORIGIN = 0x08000000, LENGTH = 64K
+  RAM : ORIGIN = 0x20000000, LENGTH = 20K
+}
+</span></pre><h2 id="blinking-a-led">Blinking a LED</h2>
+<p>Il existe plusieurs niveaux d'abstraction permettant de manipuler un microcontroleur et ses périphériques.</p>
+<p><strong>Disclaimer</strong>: les trois niveaux proposés par la suite sont juste un raccourci pour comprendre l'état actuel des bibliothèques, le <a href="https://docs.rust-embedded.org/book/start/registers.html">Embedded Rust Book</a> offre plus de détails.</p>
+<p>Le niveau 0 serait de manipuler directement la mémoire mais le compilateur ne pouvant déterminer le propriétaire de la mémoire se mettrait en travers de notre chemin.
+On pourrait avancer à grand coups de <em>unsafe</em>: ce ne serait ni ergonomique, ni confortable: à nous d'informer le compilateur qu'on sait ce qu'on fait. Vous-vous en doutez, si c'est le niveau 0 c'est justement parce qu'il est très bas niveau et qu'il existe des couches supérieures bien plus sympa.</p>
+<p>Le niveau 1 est constitué des <a href="https://github.com/rust-embedded/awesome-embedded-rust#device-crates">device crates</a>, ce sont des <em>crates</em> exposant une API safe pour manipuler les périphériques.
+Ce sont ces crates qui vont gérer l'aspect unsafe des différents registres, qui vont certainement le faire mieux que nous, et qui sont parfaitement synchro avec la définition des devices puisque générées depuis les fichiers <a href="http://www.keil.com/pack/doc/cmsis/svd/html/svd_Format_pg.html">SVD - System View Description</a> des constructeurs.
+C'est déjà plus plaisant à manipuler, mais nous allons aller encore plus loin dans l'abstraction.</p>
+<p>Au niveau 3 on utilise une définition abstraite du matériel: &quot;initialise-moi un périphérique UART sur tels pins, avec telle configuration&quot;.
+On parle de HAL: Hardware Abstraction Layer.
+Nous allons pouvoir écrire du code presque générique pour peu que les différentes cibles aient les périphériques qui nous intéressent.
+Pour reprendre l'exemple de la communication UART, il est possible de balancer des messages sans se préoccuper de savoir si c'est la broche 12 en TX ou la 15.
+En deux coups de cuillère à pot on peut cibler une carte STM32F1 ou une STM32F3: leurs propriétés sont différentes mais toutes les deux offres au moins un périphérique série.</p>
+<p>Concrètement, nous allons nous appuyer sur la <em>crate</em> <a href="https://github.com/rust-embedded/embedded-hal">embedded-hal</a>, qui définit les <em>traits</em> intéressants.
+En l'état cette crate ne porte pas d'implémentation, puisque les implémentations dépendent du matériel, on va donc ajouter une dépendance à <a href="https://github.com/japaric/stm32f103xx-hal">stm32f103xx-hal</a>.</p>
+<p>Dans <em>Cargo.toml</em>:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">[dependencies.stm32f103xx-hal]
+</span><span style="color:#f92672;">git </span><span style="color:#f8f8f2;">= </span><span style="color:#e6db74;">&quot;https://github.com/japaric/stm32f103xx-hal.git&quot;
+</span><span style="color:#f92672;">features </span><span style="color:#f8f8f2;">= [</span><span style="color:#e6db74;">&quot;rt&quot;</span><span style="color:#f8f8f2;">]
+</span><span style="color:#f92672;">version </span><span style="color:#f8f8f2;">= </span><span style="color:#e6db74;">&quot;0.1.0&quot;
+</span></pre>
+<p>Cette <em>crate</em> n'est pas encore publiée sur crates.io puisqu'il <a href="https://github.com/japaric/stm32f103xx-hal/issues/52">manque des dépendances</a>.
+Pour le moment, il est donc nécessaire de préciser le dépôt.</p>
+<p>La chaine de production est quasiment mise en place, il est temps d'ouvrir vim.
+Rappel de l'objectif: faire clignoter une LED.
+Ça tombe bien, la <em>crate</em> stm32f103xx-hal propose <a href="https://github.com/japaric/stm32f103xx-hal/blob/master/examples/blinky.rs">un exemple</a>.
+Reprenons le code en essayant de comprendre son déroulement.</p>
+<pre style="background-color:#272822;">
+<span style="color:#75715e;">// On commence par informer le compilateur qu&#39;on ne veut pas de la lib standard
+</span><span style="color:#f8f8f2;">#![no_std]
+</span><span style="color:#75715e;">// et qu&#39;on a pas de fonction main (celle qui est appelée normalement par la libc)
+</span><span style="color:#f8f8f2;">#![no_main]
+
+</span><span style="color:#75715e;">// Voir note 1
+</span><span style="color:#f92672;">use</span><span style="color:#f8f8f2;"> panic_halt;
+
+</span><span style="color:#75715e;">// On alias la crate stm32f103xx_hal derrière le nom &quot;hal&quot;
+</span><span style="color:#f92672;">use</span><span style="color:#f8f8f2;"> stm32f103xx_hal </span><span style="color:#f92672;">as</span><span style="color:#f8f8f2;"> hal;
+</span><span style="color:#75715e;">// Ce qui nous permet d&#39;avoir uniquement l&#39;alias à remplacer pour cibler une autre carte
+</span><span style="color:#f92672;">use crate</span><span style="color:#f8f8f2;">::hal::{
+    prelude::</span><span style="color:#f92672;">*</span><span style="color:#f8f8f2;">,
+    device,
+    timer::Timer,
+};
+
+</span><span style="color:#75715e;">// Voir note 2
+</span><span style="color:#f92672;">use </span><span style="color:#f8f8f2;">nb::block;
+</span><span style="color:#75715e;">// On a précisé par l&#39;attribut &quot;no_main&quot; qu&#39;on ne définissait pas de fonction main
+// mais il nous faut tout de même indiquer le point d&#39;entrée de notre programme
+</span><span style="color:#f92672;">use </span><span style="color:#f8f8f2;">cortex_m_rt::entry;
+
+#[entry]
+</span><span style="font-style:italic;color:#66d9ef;">fn </span><span style="color:#a6e22e;">main</span><span style="color:#f8f8f2;">() -&gt; </span><span style="color:#f92672;">! </span><span style="color:#f8f8f2;">{
+    </span><span style="color:#75715e;">// On récupère les périphériques du microcontrôleur
+    </span><span style="font-style:italic;color:#66d9ef;">let</span><span style="color:#f8f8f2;"> cp </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">cortex_m::Peripherals::take().</span><span style="color:#66d9ef;">unwrap</span><span style="color:#f8f8f2;">();
+    </span><span style="color:#75715e;">// Et ceux de la carte
+    </span><span style="font-style:italic;color:#66d9ef;">let</span><span style="color:#f8f8f2;"> dp </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">device::Peripherals::take().</span><span style="color:#66d9ef;">unwrap</span><span style="color:#f8f8f2;">();
+
+    </span><span style="color:#75715e;">// Voir notes 3 et 4
+    </span><span style="font-style:italic;color:#66d9ef;">let </span><span style="color:#f92672;">mut</span><span style="color:#f8f8f2;"> flash </span><span style="color:#f92672;">=</span><span style="color:#f8f8f2;"> dp.</span><span style="color:#ae81ff;">FLASH</span><span style="color:#f8f8f2;">.</span><span style="color:#66d9ef;">constrain</span><span style="color:#f8f8f2;">();
+    </span><span style="font-style:italic;color:#66d9ef;">let </span><span style="color:#f92672;">mut</span><span style="color:#f8f8f2;"> rcc </span><span style="color:#f92672;">=</span><span style="color:#f8f8f2;"> dp.</span><span style="color:#ae81ff;">RCC</span><span style="color:#f8f8f2;">.</span><span style="color:#66d9ef;">constrain</span><span style="color:#f8f8f2;">(); </span><span style="color:#75715e;">// RCC: Reset and Clock Control
+
+    // On configure et on verrouille les horloges
+    </span><span style="font-style:italic;color:#66d9ef;">let</span><span style="color:#f8f8f2;"> clocks </span><span style="color:#f92672;">=</span><span style="color:#f8f8f2;"> rcc.cfgr.</span><span style="color:#66d9ef;">freeze</span><span style="color:#f8f8f2;">(</span><span style="color:#f92672;">&amp;mut</span><span style="color:#f8f8f2;"> flash.acr);
+
+    </span><span style="color:#75715e;">// On récupère les GPIO - c&#39;est le port C qui nous intéresse (PC13)
+    </span><span style="font-style:italic;color:#66d9ef;">let </span><span style="color:#f92672;">mut</span><span style="color:#f8f8f2;"> gpioc </span><span style="color:#f92672;">=</span><span style="color:#f8f8f2;"> dp.</span><span style="color:#ae81ff;">GPIOC</span><span style="color:#f8f8f2;">.</span><span style="color:#66d9ef;">split</span><span style="color:#f8f8f2;">(</span><span style="color:#f92672;">&amp;mut</span><span style="color:#f8f8f2;"> rcc.apb2); </span><span style="color:#75715e;">// APB: Advanced Peripheral Bus
+    // Et une référence sur le pin 13
+    </span><span style="font-style:italic;color:#66d9ef;">let </span><span style="color:#f92672;">mut</span><span style="color:#f8f8f2;"> led </span><span style="color:#f92672;">=</span><span style="color:#f8f8f2;"> gpioc.pc13.</span><span style="color:#66d9ef;">into_push_pull_output</span><span style="color:#f8f8f2;">(</span><span style="color:#f92672;">&amp;mut</span><span style="color:#f8f8f2;"> gpioc.crh);
+
+    </span><span style="color:#75715e;">// On définit un timer se déclenchant toutes les secondes
+    // et se basant sur l&#39;horloge système (systick)
+    </span><span style="font-style:italic;color:#66d9ef;">let </span><span style="color:#f92672;">mut</span><span style="color:#f8f8f2;"> timer </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">Timer::syst(cp.</span><span style="color:#ae81ff;">SYST</span><span style="color:#f8f8f2;">, </span><span style="color:#ae81ff;">1.</span><span style="color:#66d9ef;">hz</span><span style="color:#f8f8f2;">(), clocks);
+    </span><span style="color:#75715e;">// On notera l&#39;absence de conversion en &quot;tick&quot; d&#39;horloge
+    // la fréquence du processeur est complètement masquée
+
+    </span><span style="color:#f92672;">loop </span><span style="color:#f8f8f2;">{
+        block!(timer.</span><span style="color:#66d9ef;">wait</span><span style="color:#f8f8f2;">()).</span><span style="color:#66d9ef;">unwrap</span><span style="color:#f8f8f2;">();
+        led.</span><span style="color:#66d9ef;">set_high</span><span style="color:#f8f8f2;">();
+        block!(timer.</span><span style="color:#66d9ef;">wait</span><span style="color:#f8f8f2;">()).</span><span style="color:#66d9ef;">unwrap</span><span style="color:#f8f8f2;">();
+        led.</span><span style="color:#66d9ef;">set_low</span><span style="color:#f8f8f2;">();
+    }
+}
+</span></pre>
+<p>Quelques précisions:</p>
+<ol>
+<li>Contrairement à un binaire exécuté par le système d'exploitation,
+il est nécessaire de spécifier la stratégie à adopter en cas de <em>panic</em>.
+Le <a href="https://docs.rust-embedded.org/book/start/panicking.html">Rust Embedded Book</a>
+mentionne plusieurs comportement.</li>
+<li>La <em>crate</em> embedded-hal a pour objectif de permettre d'écrire du code asynchrone
+<a href="https://docs.rs/embedded-hal/0.2.2/embedded_hal/#design-goals">selon plusieurs modèles</a>
+(futures, async/await, etc).
+Pour simplifier l'exemple, on utilise la <em>crate</em> <a href="https://crates.io/crates/nb">nb</a>, permettant de bloquer sur les actions asynchrones.</li>
+<li>Que fait la méthode <em>constrain</em>?
+La documentation nous éclaire un peu: &quot;Constrains the FLASH peripheral to play nicely with the other abstractions&quot;.
+En gros on obtient un handler sur le périphérique qu'on va pouvoir utiliser avec les traits de embedded-hal.</li>
+<li>Pourquoi a-t-on besoin de la flash?
+C'est une dépendance, remontons la chaine:</li>
+</ol>
+<ul>
+<li>Pour obtenir un <a href="https://japaric.github.io/stm32f103xx-hal/stm32f103xx_hal/timer/struct.Timer.html">Timer</a>,
+on doit passer une référence à la configuration des horloges (<a href="https://japaric.github.io/stm32f103xx-hal/stm32f103xx_hal/timer/struct.Timer.html#method.syst">doc</a>);</li>
+<li>La configuration des horloges est obtenue via la méthode <em>freeze</em>
+(<a href="https://japaric.github.io/stm32f103xx-hal/stm32f103xx_hal/rcc/struct.CFGR.html#method.freeze">doc</a>)
+qui requiert l'<em>Access Control Register</em> (ACR) en argument;</li>
+<li>l'ACR est une propriété de la flash, d'où la nécessité d'en obtenir une référence;</li>
+</ul>
+<p>Une propriété intéressante: <em>freeze</em> est le point d'entrée pour récupérer la configuration des horloges
+et consomme la configuration, garantissant ainsi que la configuration des horloges sera invariante lors de l'exécution.
+De la même manière, on ne peut pas obtenir deux références concurrentes à la flash:
+les bibliothèques sont construites pour exploiter le langage et tirer parti du <a href="https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html">borrow checker</a>.</p>
+<p>La boucle principale se passe de commentaires: on compte une seconde, on bascule l'état de la sortie et on recommence.
+En revanche on notera l'API ergonomique pour manipuler la sortie: <code>set_high</code>, <code>set_low</code>,
+à comparer à ce qui peut se faire avec une <em>crate</em> de plus bas niveau.</p>
+<p>Pour compiler, on fait comme d'habitude:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">cargo build
+</span></pre>
+<p>Pas besoin de préciser la cible, nous avons indiqué lors du <a href="https://greizgh.github.io/blog/rust-embedded-stm32/#bootstrap-du-projet">bootstrap du projet</a> que nous ciblons par défaut une architecture thumbv7m-none-eabi.</p>
+<h2 id="flashage">Flashage</h2>
+<p>Le binaire produit par cargo n'est pas flashable tel quel sur la carte, c'est un binaire <a href="https://fr.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a>.
+Un format de binaire tel qu'ELF n'est utile que lorsqu'un système d'exploitation est responsable de l'exécution des binaires.
+Dans notre situation, le microcontrôleur n'a pas besoin de ces informations: au démarrage le pointeur d'exécution est placé au début de la mémoire flash.</p>
+<p>Le petit utilitaire <em>objcopy</em> nous permet d'extraire la substantifique moelle du binaire:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">arm-none-eabi-objcopy -O binary target/thumbv7m-none-eabi/debug/test-stm32f103 target/thumbv7m-none-eabi/debug/output.bin
+</span></pre>
+<p>Une fois le st-link branché à la carte, nous pouvons flasher le firmware sur la carte:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">st-flash write target/thumbv7m-none-eabi/output.bin 0x8000000
+</span></pre>
+<p>On retrouve ici l'offset 0x8000000 qui correspond au début de la mémoire flash.</p>
+<p>La led verte devrait clignoter avec une période de 2 secondes.</p>
+<div class="tc">
+  <video controls muted loop  class="mw-100">
+    <source src=".&#x2F;blink.webm" type="video/webm">
+  </video>
+</div>
+<h2 id="debug">Debug</h2>
+<p>Une fonctionnalité pratique du stlink: on peut débugger l'exécution sur la carte directement.</p>
+<p>On utilise pour cela <code>st-util</code> qui fait le pont entre la carte et le débuggeur;
+un serveur en écoute attend la connexion de gdb.</p>
+<p>On peut alors lancer <code>arm-none-eabi-gdb target/thumbv7m-none-eabi/debug/test-stm32f103</code>.</p>
+<p>Il faut se connecter au serveur de debug:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">(gdb) target remote localhost:4242
+</span></pre>
+<p>Posons un premier breakpoint:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">(gdb) b main.rs:50
+(gdb) continue
+</span></pre>
+<p>L'exécution s'arrête à la ligne 50, on peut consulter l'état des registres:</p>
+<pre style="background-color:#272822;">
+<span style="color:#f8f8f2;">(gdb) info registers
+r0             0x1                 1
+r1             0x44344444          1144276036
+...
+</span></pre>
+<p>C'est exactement le même fonctionnement qu'avec un binaire exécuté sur la machine hôte:
+on peut examiner la stack, exécuter pas à pas, etc.</p>
+<h2 id="bilan">Bilan</h2>
+<p>En conclusion:</p>
+<ul>
+<li>le <a href="https://github.com/rust-embedded/cortex-m-quickstart">Cortex-M Quickstart</a> permet de bootstrapper très rapidement un projet;</li>
+<li>les <em>device crates</em> exploitent Rust pour nous empêcher de faire des conneries (accès concurrents entre autre);</li>
+<li><a href="https://docs.rs/embedded-hal/0.2.2/embedded_hal/">embedded-hal</a> est encore frais mais permet déjà de manipuler les périphériques avec un haut niveau d'abstraction;</li>
+</ul>
+<p>Deux points concernant <em>embedded-hal</em> méritent d'être soulignés:</p>
+<ul>
+<li>On va pouvoir faire de l'asynchrone (ou pas) très facilement;</li>
+<li>Les drivers génériques vont se multiplier (<a href="https://github.com/rust-embedded/awesome-embedded-rust#driver-crates">quelques-uns</a> existent déjà);</li>
+</ul>
+<p>Rust embarqué: c'est bon; mangez-en!</p>
+
+    </div>
+  </article>
+</div>
+
+    </div>
+
+    <footer class="mt5 pa3 bg-dark-gray near-white">
+      <div class="tc mt3">
+        
+        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
+          </svg>
+        </a>
+        
+        <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
+          <svg fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
+          </svg>
+        </a>
+        <a class="link black hover-silver dib h2 w2" href="https://gitlab.com/greizgh" title="GitLab">
+          <svg fill="currentColor" viewBox="0 0 586 559">
+            <path d="M461.514,298.355l-18.049-55.587c0.008,0.025,0.011,0.051,0.019,0.076c-0.009-0.029-0.014-0.058-0.022-0.087
+                     c-0.001-0.002-0.001-0.003-0.001-0.005c0-0.001,0-0.002,0-0.002l-35.83-110.31c-1.96-5.811-7.353-9.711-13.536-9.663
+                     c-6.201,0.032-11.446,3.857-13.364,9.748L346.721,237.23H239.408l-34.074-104.712c-1.916-5.886-7.162-9.71-13.362-9.742
+                     c-0.025,0-0.049,0-0.075,0c-6.105,0-11.509,3.876-13.49,9.752l-35.732,110.211l-0.005,0.014c0,0.001,0,0.002,0,0.003
+                     c-0.009,0.028-0.013,0.056-0.022,0.084c0.008-0.025,0.011-0.051,0.019-0.076l-18.115,55.591c-2.725,8.392,0.232,17.512,7.36,22.697
+                     L288.328,434.7c0.023,0.017,0.049,0.027,0.072,0.044c0.067,0.048,0.132,0.097,0.2,0.142c-0.064-0.043-0.124-0.09-0.187-0.134
+                     c0,0,0-0.001-0.001-0.001c0.01,0.008,0.022,0.013,0.033,0.02c0.009,0.006,0.018,0.01,0.027,0.016
+                     c0.001,0.001,0.002,0.002,0.004,0.003c0.242,0.168,0.493,0.322,0.753,0.463c0.036,0.02,0.068,0.045,0.104,0.064
+                     c0.001,0,0.001,0.001,0.002,0.001c0.022,0.011,0.042,0.025,0.064,0.036c0.017,0.008,0.035,0.013,0.051,0.021
+                     c0.012,0.006,0.025,0.01,0.037,0.015c0.029,0.014,0.061,0.023,0.09,0.038c0.136,0.065,0.279,0.118,0.419,0.175
+                     c0.131,0.054,0.258,0.117,0.392,0.164c0.006,0.002,0.011,0.005,0.017,0.007c0.022,0.008,0.042,0.019,0.065,0.027
+                     c0.028,0.01,0.055,0.021,0.083,0.03c0.011,0.003,0.022,0.005,0.033,0.008c0.035,0.011,0.073,0.016,0.108,0.026
+                     c0.013,0.004,0.028,0.006,0.042,0.01c0.188,0.057,0.383,0.098,0.577,0.141c0.076,0.017,0.149,0.041,0.226,0.055
+                     c0.011,0.002,0.021,0.006,0.033,0.008c0.025,0.005,0.048,0.014,0.074,0.018c0.041,0.007,0.081,0.02,0.123,0.026
+                     c0.033,0.005,0.067,0.003,0.1,0.008c0.006,0.001,0.011,0,0.017,0.001c0.002,0,0.003,0,0.005,0c0.369,0.053,0.743,0.09,1.124,0.09
+                     c0.002,0,0.004,0,0.007,0l0,0c0.001,0,0.002,0,0.002,0c0,0,0.001,0,0.001,0c0.001,0,0.002,0,0.003,0
+                     c0.382,0,0.756-0.037,1.126-0.09c0.001,0,0.003,0,0.004,0c0.006-0.001,0.012,0,0.018-0.001c0.033-0.005,0.068-0.003,0.101-0.008
+                     c0.042-0.007,0.082-0.019,0.124-0.026c0.025-0.004,0.048-0.013,0.073-0.018c0.011-0.002,0.021-0.006,0.032-0.008
+                     c0.078-0.015,0.153-0.039,0.231-0.056c0.191-0.042,0.383-0.083,0.57-0.139c0.013-0.004,0.026-0.005,0.039-0.009
+                     c0.037-0.011,0.075-0.016,0.112-0.027c0.011-0.004,0.023-0.005,0.034-0.008c0.029-0.009,0.057-0.021,0.085-0.031
+                     c0.022-0.008,0.042-0.019,0.064-0.027c0.006-0.002,0.011-0.005,0.017-0.007c0.142-0.05,0.276-0.116,0.415-0.173
+                     c0.129-0.054,0.261-0.102,0.387-0.162c0.031-0.015,0.064-0.024,0.094-0.039c0.012-0.006,0.026-0.01,0.038-0.016
+                     c0.017-0.008,0.035-0.013,0.052-0.022c0.023-0.012,0.045-0.026,0.067-0.037c0,0,0.001,0,0.001-0.001
+                     c0.037-0.019,0.07-0.046,0.107-0.066c0.258-0.14,0.508-0.293,0.749-0.46c0.019-0.013,0.041-0.023,0.061-0.037
+                     c0.005-0.004,0.011-0.006,0.016-0.01c0.023-0.017,0.05-0.028,0.073-0.045l156.44-113.65
+                     C461.282,315.867,464.239,306.747,461.514,298.355z M394.194,142.774l30.68,94.456h-61.36L394.194,142.774z M419.501,253.202
+                     l-12.519,16.041L314.648,387.55l43.677-134.348H419.501z M285.428,430.707C285.428,430.707,285.428,430.707,285.428,430.707
+                     c0.008,0.024,0.021,0.046,0.029,0.071C285.449,430.753,285.436,430.731,285.428,430.707z M271.42,387.558L166.624,253.202l0,0
+                     h61.18L271.42,387.558z M191.875,142.773l30.737,94.457h-61.36L191.875,142.773z M141.304,308.133
+                     c-1.516-1.103-2.144-3.05-1.563-4.838l13.466-41.325l98.67,126.502L141.304,308.133z M288.053,434.489
+                     c-0.031-0.025-0.061-0.052-0.091-0.078c-0.006-0.005-0.012-0.012-0.019-0.017c-0.06-0.05-0.119-0.101-0.177-0.153
+                     c-0.114-0.099-0.226-0.2-0.333-0.306c0.009,0.008,0.019,0.015,0.028,0.023c0.012,0.011,0.025,0.02,0.037,0.031
+                     c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
+                     C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
+                     M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
+		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+          </svg>
+        </a>
+      </div>
+
+
+      <small class="ma1 db tc gray">Carefully handcrafted with ❤ - CC-BY-NC-SA</small>
+    </footer>
+
+    
+    
+  </body>
+
+</html>
