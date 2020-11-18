@@ -4,6 +4,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+    
+<link rel="canonical" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;" />
+<meta http-equiv="refresh" content="0; URL=https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;" />
+
+
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 
     <!-- Enable responsiveness on mobile devices-->
@@ -12,11 +17,9 @@
     <title>Let&#x27;s shuffle bits - Serveur WireGuard sur OpenWRT</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;style.css">
 
-    
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
     
 
     
@@ -36,7 +39,7 @@
 <div class="flex justify-center">
   <article>
     <h1 class="orange lh-title">
-      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;" class="link hover-black">
+      <a href="https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;openwrt-wireguard-server&#x2F;" class="link hover-black">
         Serveur WireGuard sur OpenWRT
       </a>
     </h1>
@@ -58,8 +61,7 @@ interface pour faire transiter tout le trafic du routeur par un tunnel WireGuard
 À l'inverse ici, nous allons configurer le routeur en mode &quot;serveur&quot;
 acceptant la connexion de plusieurs pairs <em>nomades</em> (téléphone, laptop)
 pour accéder aux ressources locales.</p>
-<p id="zola-continue-reading"><a name="continue-reading"></a></p>
-<h2 id="pourquoi-wireguard">Pourquoi WireGuard</h2>
+<span id="continue-reading"></span><h2 id="pourquoi-wireguard">Pourquoi WireGuard</h2>
 <p>WireGuard est encore en développement, et n'a pas été audité (pour le moment).
 Cependant, WireGuard a déjà fait l'objet de <a href="https://eprint.iacr.org/2018/080">plusieurs</a> <a href="https://courses.csail.mit.edu/6.857/2018/project/He-Xu-Xu-WireGuard.pdf">papiers</a> qui ont montré que les bases sont solides.
 En plus du <a href="https://www.ndss-symposium.org/ndss2017/ndss-2017-programme/wireguard-next-generation-kernel-network-tunnel/">papier initial</a>.</p>
@@ -84,9 +86,9 @@ de mettre à jour la configuration à l'occasion d'une montée de version.</p>
 <h2 id="etape-1-installer-wireguard">Étape 1: installer WireGuard</h2>
 <p>On commence en douceur:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">opkg update
+<code><span style="color:#f8f8f2;">opkg update
 opkg install luci-proto-wireguard luci-app-wireguard wireguard kmod-wireguard wireguard-tools
-</span></pre>
+</span></code></pre>
 <p>Un <code>lsmod | grep wireguard</code> nous apprend que le module kernel est bien chargé,
 pour autant, la création de l'interface par la suite remonte une erreur &quot;INVALID_PROTO&quot;.
 Bref, un reboot est nécessaire pour la prise en compte de ce nouveau type d'interface.</p>
@@ -94,13 +96,13 @@ Bref, un reboot est nécessaire pour la prise en compte de ce nouveau type d'int
 <p>WireGuard repose sur du chiffrement asymétrique, nous allons donc avoir besoin d'une clé privée et d'une clé publique.
 L'utilitaire <code>wg</code> que l'on vient d'installer permet de faire ça très simplement:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">PRIV_KEY</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">$(wg genkey)
-</span></pre>
+<code><span style="color:#f8f8f2;">PRIV_KEY</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">$(wg genkey)
+</span></code></pre>
 <p>Contrairement à ce que j'ai pu lire ailleurs, on ne va pas écrire la clé dans un fichier, on la conserve en mémoire.
 Elle sera de toute façon écrite dans le fichier de configuration des interfaces, et cela évite de laisser trainer une clé privée sur le disque.</p>
 <p>Nous avons tout ce qu'il faut pour créer l'interface:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">uci set network.wg0=</span><span style="color:#e6db74;">&quot;interface&quot;
+<code><span style="color:#f8f8f2;">uci set network.wg0=</span><span style="color:#e6db74;">&quot;interface&quot;
 </span><span style="color:#f8f8f2;">uci set network.wg0.proto=</span><span style="color:#e6db74;">&quot;wireguard&quot;
 </span><span style="color:#f8f8f2;">uci set network.wg0.private_key=</span><span style="color:#e6db74;">&quot;$PRIV_KEY&quot;
 </span><span style="color:#f8f8f2;">uci add_list network.wg0.addresses=</span><span style="color:#e6db74;">&quot;10.1.0.1/24&quot;
@@ -108,7 +110,7 @@ Elle sera de toute façon écrite dans le fichier de configuration des interface
 </span><span style="color:#f8f8f2;">uci set network.wg0.listen_port=</span><span style="color:#e6db74;">&quot;56718&quot;
 </span><span style="color:#f8f8f2;">uci commit network
 /etc/init.d/network reload
-</span></pre>
+</span></code></pre>
 <p>Le nom <em>wg0</em> est complètement arbitraire, mais c'est utilisé par la doc de WireGuard alors autant rester cohérent.
 L'IP donnée est également arbitraire, pourvu que vous fournissiez un sous-réseau privé (<a href="https://tools.ietf.org/html/rfc1918">RFC 1918</a>).
 Ici, toutes les machines connectée au VPN auront une adresse de la forme 10.1.0.X ou en IPv6 fcff:1997:5555:0:X:X:X:X.
@@ -119,9 +121,9 @@ Je souhaite faire en sorte que mes appareils se comportent comme s'il étaient s
 donc je vais ajouter l'interface <em>wg0</em> à la zone <em>lan</em>.
 Il est tout à fait possible de définir une nouvelle zone dédiée à WireGuard.</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">uci add_list firewall.@zone</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">0</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.network=</span><span style="color:#e6db74;">&quot;wg0&quot;
+<code><span style="color:#f8f8f2;">uci add_list firewall.@zone</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">0</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.network=</span><span style="color:#e6db74;">&quot;wg0&quot;
 </span><span style="color:#f8f8f2;">uci commit firewall
-</span></pre>
+</span></code></pre>
 <p>Chez moi la zone <em>lan</em> porte l'index 0, <code>uci show firewall</code> vous le confirmera.</p>
 <h2 id="etape-3-connecter-un-appareil">Étape 3: Connecter un appareil</h2>
 <p>C'est la tablette Android qui sera le mannequin du crash test.
@@ -143,7 +145,7 @@ La configuration du tunnel en lui même réclame les informations suivantes:</p>
 </ul>
 <p>Il faut également autoriser cet appareil côté routeur:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">uci add network wireguard_wg0
+<code><span style="color:#f8f8f2;">uci add network wireguard_wg0
 uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.public_key=</span><span style="color:#e6db74;">&quot;XXXXXXXX&quot;
 </span><span style="color:#f8f8f2;">uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.route_allowed_ips=</span><span style="color:#e6db74;">&quot;1&quot;
 </span><span style="color:#f8f8f2;">uci add_list network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.allowed_ips=</span><span style="color:#e6db74;">&quot;10.1.0.2/32&quot;
@@ -151,7 +153,7 @@ uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span 
 </span><span style="color:#f8f8f2;">uci set network.@wireguard_wg0</span><span style="color:#f92672;">[</span><span style="color:#f8f8f2;">-1</span><span style="color:#f92672;">]</span><span style="color:#f8f8f2;">.description=</span><span style="color:#e6db74;">&#39;Tablet&#39;
 </span><span style="color:#f8f8f2;">uci commit network
 /etc/init.d/network restart
-</span></pre>
+</span></code></pre>
 <p>Attention, il est important de bien nommer le réseau: <code>wireguard_&lt;ifname&gt;</code> (cf le <a href="https://openwrt.org/docs/guide-user/network/tunneling_interface_protocols?s%5B%5D=wireguard#static_addressing_of_wireguard_tunnel">wiki OpenWRT</a>).
 Il sera donc normal d'avoir plusieurs entrée avec le même nom &quot;wireguard_wg0&quot; si vous avez plusieurs pairs à connecter.</p>
 <p>Autre point de confusion (je me suis fais avoir): la liste &quot;allowed_ips&quot; correspond aux IPs autorisées pour chaque host.
@@ -188,12 +190,6 @@ On sent que l'application Android n'est pas la priorité: elle est fonctionnelle
 
     <footer class="mt5 pa3 bg-dark-gray near-white">
       <div class="tc mt3">
-        
-        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
-          <svg fill="currentColor" viewBox="0 0 24 24">
-    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
-          </svg>
-        </a>
         
         <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
           <svg fill="currentColor" viewBox="0 0 24 24">
@@ -237,10 +233,10 @@ On sent que l'application Android n'est pas la priorité: elle est fonctionnelle
                      c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
                      C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
                      M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
-		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
-		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
-		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
-		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+                     c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+                     c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+                     C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+                     C446.906,305.083,446.279,307.03,444.766,308.13z"/>
           </svg>
         </a>
       </div>

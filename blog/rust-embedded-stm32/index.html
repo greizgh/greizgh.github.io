@@ -4,6 +4,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+    
+<link rel="canonical" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;" />
+<meta http-equiv="refresh" content="0; URL=https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;" />
+
+
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 
     <!-- Enable responsiveness on mobile devices-->
@@ -12,11 +17,9 @@
     <title>Let&#x27;s shuffle bits - Rust embarqué: jouons avec une stm32</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;style.css">
 
-    
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
     
 
     
@@ -36,7 +39,7 @@
 <div class="flex justify-center">
   <article>
     <h1 class="orange lh-title">
-      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;" class="link hover-black">
+      <a href="https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;rust-embedded-stm32&#x2F;" class="link hover-black">
         Rust embarqué: jouons avec une stm32
       </a>
     </h1>
@@ -49,11 +52,11 @@
 je n'avais plus d'excuse pour laisser cette carte prendre la poussière.</p>
 <p>C'est parti, nous allons faire clignoter une LED pas-à-pas.
 Au programme: mise en place de l'environnement de développement et découverte des outils Rust pour l'embarqué.</p>
-<p id="zola-continue-reading"><a name="continue-reading"></a></p>
-<h2 id="l-engin">L'engin</h2>
+<span id="continue-reading"></span><h2 id="l-engin">L'engin</h2>
 <p>La carte en question est une <a href="https://www.amazon.fr/gp/product/B01C2I7CSU/ref=oh_aui_detailpage_o02_s00?ie=UTF8&amp;psc=1">STM32F103C8T6</a> à 5€.</p>
 <div class="tc">
   <img src=".&#x2F;board.jpg" class="mw-100" alt="L&#x27;engin">
+  
 </div>
 <p>À ce prix là, on a:</p>
 <ul>
@@ -75,22 +78,22 @@ un <a href="https://www.amazon.fr/gp/product/B01F37YMJ4/ref=oh_aui_detailpage_o0
 C'est le jeu d'instructions du Cortex-M3.
 Avec rustup, rien de plus simple:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">rustup target add thumbv7m-none-eabi
-</span></pre>
+<code><span style="color:#f8f8f2;">rustup target add thumbv7m-none-eabi
+</span></code></pre>
 <p>Il nous faudra également <a href="https://github.com/texane/stlink">stlink</a> et gdb pour respectivement flasher et débugger la carte.</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">sudo pacman -Sy stlink arm-none-eabi-gdb
-</span></pre>
+<code><span style="color:#f8f8f2;">sudo pacman -Sy stlink arm-none-eabi-gdb
+</span></code></pre>
 <p>Le <a href="https://github.com/rust-embedded/wg">rust embedded devices working group</a> maintient un template d'application
 pour les cibles Cortex-M. C'est ce que nous allons utiliser, mais il nous faut pour cela la sous-commande <code>cargo-generate</code>.
 Installation express:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">cargo install cargo-generate
-</span></pre><h2 id="bootstrap-du-projet">Bootstrap du projet</h2>
+<code><span style="color:#f8f8f2;">cargo install cargo-generate
+</span></code></pre><h2 id="bootstrap-du-projet">Bootstrap du projet</h2>
 <p>Équippés de nos nouveaux outils, initialisons le projet:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">cargo generate --git https://github.com/rust-embedded/cortex-m-quickstart
-</span></pre>
+<code><span style="color:#f8f8f2;">cargo generate --git https://github.com/rust-embedded/cortex-m-quickstart
+</span></code></pre>
 <p>Après quelques questions, on obtient un nouveau répertoire contenant le projet, à la manière d'un <code>cargo new</code>.
 La plupart des fichiers sont ceux d'un projet rust classique, mais certains d'entre eux sont issus du template <em>cortex-m-quickstart</em>:</p>
 <ul>
@@ -99,7 +102,7 @@ La plupart des fichiers sont ceux d'un projet rust classique, mais certains d'en
 <li><strong>memory.x</strong>: structure de la mémoire de la plateforme cible, voir ci-dessous;</li>
 </ul>
 <p>Il est nécessaire de porter la configuration de la mémoire dans ce fichier <em>memory.x</em>,
-en reprenant les valeurs de la <a href="https://greizgh.github.io/blog/rust-embedded-stm32/en.CD00161566.pdf">datasheet</a>.
+en reprenant les valeurs de la <a href="https://greizgh.eu/blog/rust-embedded-stm32/en.CD00161566.pdf">datasheet</a>.
 Il nous faut en particulier:</p>
 <ul>
 <li>les offsets de départ de la mémoire flash et RAM;</li>
@@ -116,12 +119,12 @@ Il nous faut en particulier:</p>
 </ul>
 <p>Configurons le fichier <strong>memory.x</strong> en conséquence:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">MEMORY
+<code><span style="color:#f8f8f2;">MEMORY
 {
   FLASH : ORIGIN = 0x08000000, LENGTH = 64K
   RAM : ORIGIN = 0x20000000, LENGTH = 20K
 }
-</span></pre><h2 id="blinking-a-led">Blinking a LED</h2>
+</span></code></pre><h2 id="blinking-a-led">Blinking a LED</h2>
 <p>Il existe plusieurs niveaux d'abstraction permettant de manipuler un microcontroleur et ses périphériques.</p>
 <p><strong>Disclaimer</strong>: les trois niveaux proposés par la suite sont juste un raccourci pour comprendre l'état actuel des bibliothèques, le <a href="https://docs.rust-embedded.org/book/start/registers.html">Embedded Rust Book</a> offre plus de détails.</p>
 <p>Le niveau 0 serait de manipuler directement la mémoire mais le compilateur ne pouvant déterminer le propriétaire de la mémoire se mettrait en travers de notre chemin.
@@ -138,11 +141,11 @@ En deux coups de cuillère à pot on peut cibler une carte STM32F1 ou une STM32F
 En l'état cette crate ne porte pas d'implémentation, puisque les implémentations dépendent du matériel, on va donc ajouter une dépendance à <a href="https://github.com/japaric/stm32f103xx-hal">stm32f103xx-hal</a>.</p>
 <p>Dans <em>Cargo.toml</em>:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">[dependencies.stm32f103xx-hal]
+<code><span style="color:#f8f8f2;">[dependencies.stm32f103xx-hal]
 </span><span style="color:#f92672;">git </span><span style="color:#f8f8f2;">= </span><span style="color:#e6db74;">&quot;https://github.com/japaric/stm32f103xx-hal.git&quot;
 </span><span style="color:#f92672;">features </span><span style="color:#f8f8f2;">= [</span><span style="color:#e6db74;">&quot;rt&quot;</span><span style="color:#f8f8f2;">]
 </span><span style="color:#f92672;">version </span><span style="color:#f8f8f2;">= </span><span style="color:#e6db74;">&quot;0.1.0&quot;
-</span></pre>
+</span></code></pre>
 <p>Cette <em>crate</em> n'est pas encore publiée sur crates.io puisqu'il <a href="https://github.com/japaric/stm32f103xx-hal/issues/52">manque des dépendances</a>.
 Pour le moment, il est donc nécessaire de préciser le dépôt.</p>
 <p>La chaine de production est quasiment mise en place, il est temps d'ouvrir vim.
@@ -150,7 +153,7 @@ Rappel de l'objectif: faire clignoter une LED.
 Ça tombe bien, la <em>crate</em> stm32f103xx-hal propose <a href="https://github.com/japaric/stm32f103xx-hal/blob/master/examples/blinky.rs">un exemple</a>.
 Reprenons le code en essayant de comprendre son déroulement.</p>
 <pre style="background-color:#272822;">
-<span style="color:#75715e;">// On commence par informer le compilateur qu&#39;on ne veut pas de la lib standard
+<code><span style="color:#75715e;">// On commence par informer le compilateur qu&#39;on ne veut pas de la lib standard
 </span><span style="color:#f8f8f2;">#![no_std]
 </span><span style="color:#75715e;">// et qu&#39;on a pas de fonction main (celle qui est appelée normalement par la libc)
 </span><span style="color:#f8f8f2;">#![no_main]
@@ -205,7 +208,7 @@ Reprenons le code en essayant de comprendre son déroulement.</p>
         led.</span><span style="color:#66d9ef;">set_low</span><span style="color:#f8f8f2;">();
     }
 }
-</span></pre>
+</span></code></pre>
 <p>Quelques précisions:</p>
 <ol>
 <li>Contrairement à un binaire exécuté par le système d'exploitation,
@@ -239,26 +242,27 @@ En revanche on notera l'API ergonomique pour manipuler la sortie: <code>set_high
 à comparer à ce qui peut se faire avec une <em>crate</em> de plus bas niveau.</p>
 <p>Pour compiler, on fait comme d'habitude:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">cargo build
-</span></pre>
-<p>Pas besoin de préciser la cible, nous avons indiqué lors du <a href="https://greizgh.github.io/blog/rust-embedded-stm32/#bootstrap-du-projet">bootstrap du projet</a> que nous ciblons par défaut une architecture thumbv7m-none-eabi.</p>
+<code><span style="color:#f8f8f2;">cargo build
+</span></code></pre>
+<p>Pas besoin de préciser la cible, nous avons indiqué lors du <a href="https://greizgh.eu/blog/rust-embedded-stm32/#bootstrap-du-projet">bootstrap du projet</a> que nous ciblons par défaut une architecture thumbv7m-none-eabi.</p>
 <h2 id="flashage">Flashage</h2>
 <p>Le binaire produit par cargo n'est pas flashable tel quel sur la carte, c'est un binaire <a href="https://fr.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a>.
 Un format de binaire tel qu'ELF n'est utile que lorsqu'un système d'exploitation est responsable de l'exécution des binaires.
 Dans notre situation, le microcontrôleur n'a pas besoin de ces informations: au démarrage le pointeur d'exécution est placé au début de la mémoire flash.</p>
 <p>Le petit utilitaire <em>objcopy</em> nous permet d'extraire la substantifique moelle du binaire:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">arm-none-eabi-objcopy -O binary target/thumbv7m-none-eabi/debug/test-stm32f103 target/thumbv7m-none-eabi/debug/output.bin
-</span></pre>
+<code><span style="color:#f8f8f2;">arm-none-eabi-objcopy -O binary target/thumbv7m-none-eabi/debug/test-stm32f103 target/thumbv7m-none-eabi/debug/output.bin
+</span></code></pre>
 <p>Une fois le st-link branché à la carte, nous pouvons flasher le firmware sur la carte:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">st-flash write target/thumbv7m-none-eabi/output.bin 0x8000000
-</span></pre>
+<code><span style="color:#f8f8f2;">st-flash write target/thumbv7m-none-eabi/output.bin 0x8000000
+</span></code></pre>
 <p>On retrouve ici l'offset 0x8000000 qui correspond au début de la mémoire flash.</p>
 <p>La led verte devrait clignoter avec une période de 2 secondes.</p>
 <div class="tc">
   <video controls muted loop  class="mw-100">
     <source src=".&#x2F;blink.webm" type="video/webm">
+    
   </video>
 </div>
 <h2 id="debug">Debug</h2>
@@ -268,20 +272,20 @@ un serveur en écoute attend la connexion de gdb.</p>
 <p>On peut alors lancer <code>arm-none-eabi-gdb target/thumbv7m-none-eabi/debug/test-stm32f103</code>.</p>
 <p>Il faut se connecter au serveur de debug:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">(gdb) target remote localhost:4242
-</span></pre>
+<code><span style="color:#f8f8f2;">(gdb) target remote localhost:4242
+</span></code></pre>
 <p>Posons un premier breakpoint:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">(gdb) b main.rs:50
+<code><span style="color:#f8f8f2;">(gdb) b main.rs:50
 (gdb) continue
-</span></pre>
+</span></code></pre>
 <p>L'exécution s'arrête à la ligne 50, on peut consulter l'état des registres:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">(gdb) info registers
+<code><span style="color:#f8f8f2;">(gdb) info registers
 r0             0x1                 1
 r1             0x44344444          1144276036
 ...
-</span></pre>
+</span></code></pre>
 <p>C'est exactement le même fonctionnement qu'avec un binaire exécuté sur la machine hôte:
 on peut examiner la stack, exécuter pas à pas, etc.</p>
 <h2 id="bilan">Bilan</h2>
@@ -306,12 +310,6 @@ on peut examiner la stack, exécuter pas à pas, etc.</p>
 
     <footer class="mt5 pa3 bg-dark-gray near-white">
       <div class="tc mt3">
-        
-        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
-          <svg fill="currentColor" viewBox="0 0 24 24">
-    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
-          </svg>
-        </a>
         
         <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
           <svg fill="currentColor" viewBox="0 0 24 24">
@@ -355,10 +353,10 @@ on peut examiner la stack, exécuter pas à pas, etc.</p>
                      c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
                      C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
                      M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
-		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
-		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
-		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
-		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+                     c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+                     c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+                     C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+                     C446.906,305.083,446.279,307.03,444.766,308.13z"/>
           </svg>
         </a>
       </div>

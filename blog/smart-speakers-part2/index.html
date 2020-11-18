@@ -4,6 +4,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+    
+<link rel="canonical" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;smart-speakers-part2&#x2F;" />
+<meta http-equiv="refresh" content="0; URL=https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;smart-speakers-part2&#x2F;" />
+
+
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 
     <!-- Enable responsiveness on mobile devices-->
@@ -12,11 +17,9 @@
     <title>Let&#x27;s shuffle bits - Smart speakers project II</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;style.css">
 
-    
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
     
 
     
@@ -36,7 +39,7 @@
 <div class="flex justify-center">
   <article>
     <h1 class="orange lh-title">
-      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;blog&#x2F;smart-speakers-part2&#x2F;" class="link hover-black">
+      <a href="https:&#x2F;&#x2F;greizgh.eu&#x2F;blog&#x2F;smart-speakers-part2&#x2F;" class="link hover-black">
         Smart speakers project II
       </a>
     </h1>
@@ -44,21 +47,20 @@
       <time><small>🖋️ 20&#x2F;08&#x2F;2020</small></time>
     </div>
     <div class="lh-copy measure-wide">
-      <p>In the <a href="https://greizgh.github.io/blog/smart-speakers-plan/">previous article</a> I ended up with a nice <em>master</em> system streaming audio with snapcast.
+      <p>In the <a href="https://greizgh.eu/blog/smart-speakers-plan/">previous article</a> I ended up with a nice <em>master</em> system streaming audio with snapcast.
 It's now time to assemble what will be the speakers.</p>
-<p id="zola-continue-reading"><a name="continue-reading"></a></p>
-<h2 id="broadcaster-improvement">Broadcaster improvement</h2>
+<span id="continue-reading"></span><h2 id="broadcaster-improvement">Broadcaster improvement</h2>
 <p>While I was still waiting for the miniamps to arrive, I've spent some time improving the broadcast system.</p>
 <p>I updated snapcast and <a href="https://github.com/NixOS/nixpkgs/pull/94159">librespot</a> to play along nicely,
 since there was an issue with the packaged librespot. I really like how easy it is to use a custom package in nixos, and how easy it is to contribute back to nixpkgs with an update PR.</p>
 <p>Then exposed snapcast server on avahi, which is as easy as:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">  </span><span style="font-style:italic;color:#fd971f;">services</span><span style="color:#f92672;">.</span><span style="font-style:italic;color:#fd971f;">avahi </span><span style="background-color:#f92672;color:#f8f8f0;">=</span><span style="color:#f8f8f2;"> {
+<code><span style="color:#f8f8f2;">  </span><span style="font-style:italic;color:#fd971f;">services</span><span style="color:#f92672;">.</span><span style="font-style:italic;color:#fd971f;">avahi </span><span style="background-color:#f92672;color:#f8f8f0;">=</span><span style="color:#f8f8f2;"> {
     </span><span style="color:#a6e22e;">enable </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
     </span><span style="color:#a6e22e;">publish</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">enable </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
     </span><span style="color:#a6e22e;">publish</span><span style="color:#f8f8f2;">.</span><span style="color:#a6e22e;">userServices </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">true</span><span style="color:#f8f8f2;">;
   }</span><span style="background-color:#f92672;color:#f8f8f0;">;</span><span style="color:#f8f8f2;">
-</span></pre>
+</span></code></pre>
 <p>Not directly related to the broadcaster, I also set up a NTP server on my local network.
 This is an attempt to reduce timedrifting between all speakers.
 It might not be necessary, but won't add any cost or maintenance burden.</p>
@@ -107,6 +109,7 @@ Our local DIY store had some fancy adhesive coating, spot on!</p>
 </div>
 <div class="tc">
   <img src=".&#x2F;glitter.jpg" class="mw-100" alt="glitter coated speakers">
+  
 </div>
 <div class="tc">
   <img src=".&#x2F;final.jpg" class="mw-100" alt="final result">
@@ -146,12 +149,6 @@ Our local DIY store had some fancy adhesive coating, spot on!</p>
 
     <footer class="mt5 pa3 bg-dark-gray near-white">
       <div class="tc mt3">
-        
-        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
-          <svg fill="currentColor" viewBox="0 0 24 24">
-    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
-          </svg>
-        </a>
         
         <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
           <svg fill="currentColor" viewBox="0 0 24 24">
@@ -195,10 +192,10 @@ Our local DIY store had some fancy adhesive coating, spot on!</p>
                      c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
                      C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
                      M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
-		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
-		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
-		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
-		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+                     c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+                     c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+                     C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+                     C446.906,305.083,446.279,307.03,444.766,308.13z"/>
           </svg>
         </a>
       </div>

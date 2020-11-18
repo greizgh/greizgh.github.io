@@ -4,6 +4,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+    
+<link rel="canonical" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;vaincre-selinux.html&#x2F;" />
+<meta http-equiv="refresh" content="0; URL=https:&#x2F;&#x2F;greizgh.eu&#x2F;vaincre-selinux.html&#x2F;" />
+
+
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 
     <!-- Enable responsiveness on mobile devices-->
@@ -12,11 +17,9 @@
     <title>Let&#x27;s shuffle bits - Vaincre SELinux</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;style.css">
 
-    
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
     
 
     
@@ -36,7 +39,7 @@
 <div class="flex justify-center">
   <article>
     <h1 class="orange lh-title">
-      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;vaincre-selinux.html&#x2F;" class="link hover-black">
+      <a href="https:&#x2F;&#x2F;greizgh.eu&#x2F;vaincre-selinux.html&#x2F;" class="link hover-black">
         Vaincre SELinux
       </a>
     </h1>
@@ -49,7 +52,7 @@ Sur le wiki fedora, l'article concernant la mise en place de postfix+dovecot men
 C'est dommage parce que, même si ce n'est pas ultra complexe, cela peut faire perdre beaucoup de temps quand on a pas le réflexe SElinux.
 C'est d'autant plus dommage que peu de ressources mentionnent SElinux dans le cadre de mise en place de services tiers.
 Je pense qu'un grand nombre d'opérateurs préfèrent se débarrasser de SElinux pour être tranquille. C'est loin d'être une solution et cela nous prive des avantages de SElinux, essayons de faire mieux.</p>
-<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<span id="continue-reading"></span>
 <p>La présentation <a href="https://www.youtube.com/watch?v=MxjenQ31b70">SElinux for mere mortals</a> de <em>Thomas Cameron</em> est excellente pour se mettre dans le bain.
 Prévoyez tout de même 50 minutes pour démystifier SElinux.
 Si l'outil ne semble pas extrêmement complexe dans sa mise en œuvre, il y a pourtant fort à parier qu'il se mettra dans vos pattes à la première occasion.</p>
@@ -57,8 +60,8 @@ Si l'outil ne semble pas extrêmement complexe dans sa mise en œuvre, il y a po
 <h2 id="le-choix-des-armes">Le choix des armes</h2>
 <p>On s'assure dans un premier temps d'avoir les outils nécessaires:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">yum install setools-console setroubleshoot-server setroubleshoot-plugins
-</span></pre>
+<code>yum install setools-console setroubleshoot-server setroubleshoot-plugins
+</code></pre>
 <p>Si le nom du paquet <em>setools-console</em> est assez clair sur ce qu'il contient, <em>setroubleshoot-server</em> mérite d'être explicité un chouia.</p>
 <p>Sur les distributions &quot;Desktop&quot;, setroubleshootd tourne en tant que démon et informe en live l'utilisateur des erreurs SElinux.
 Le paquet <em>setroobleshoot-server</em> est destiné aux machines où cela n'est pas nécessaire, les serveurs entre autre.
@@ -80,25 +83,25 @@ C'est donc bien SElinux qui fout le bordel et comme c'est pas trop mal fait, on 
 <code>sealert -a /var/log/audit/audit.log</code>
 et là bim plein d'infos:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">SELinux is preventing imap from add_name access on the directory truc.com.
-</span><span style="color:#f8f8f2;">
-</span><span style="color:#f8f8f2;">***  Plugin catchall_labels (83.8 confidence) suggests   *****************
-</span><span style="color:#f8f8f2;">
-</span><span style="color:#f8f8f2;">If you want to allow imap to have add_name access on the truc.com directory
-</span><span style="color:#f8f8f2;">Then l&#39;étiquette sur truc.com doit être modifiée.
-</span><span style="color:#f8f8f2;">Do
-</span><span style="color:#f8f8f2;"># semanage fcontext -a -t FILE_TYPE &#39;truc.com&#39;
-</span><span style="color:#f8f8f2;">où FILE_TYPE est l&#39;une des valeurs suivantes : admin_home_t, cache_home_t, config_home_t, data_home_t, dovecot_spool_t, dovecot_tmp_t, dovecot_var_lib_t, dovecot_var_log_t, dovecot_var_run_t, gconf_home_t, gnome_home_t, httpd_user_content_t, httpd_user_script_exec_t, krb5_host_rcache_t, mail_home_rw_t, mail_spool_t, mozilla_plugin_rw_t, postfix_private_t, telepathy_cache_home_t, telepathy_data_home_t, tmp_t, user_fonts_t, user_home_dir_t, user_home_t, user_tmp_t, var_lib_t, var_log_t, var_run_t, virt_home_t. 
-</span><span style="color:#f8f8f2;">Puis exécutez : 
-</span><span style="color:#f8f8f2;">restorecon -v &#39;truc.com&#39;
-</span></pre>
+<code>SELinux is preventing imap from add_name access on the directory truc.com.
+
+***  Plugin catchall_labels (83.8 confidence) suggests   *****************
+
+If you want to allow imap to have add_name access on the truc.com directory
+Then l'étiquette sur truc.com doit être modifiée.
+Do
+# semanage fcontext -a -t FILE_TYPE 'truc.com'
+où FILE_TYPE est l'une des valeurs suivantes : admin_home_t, cache_home_t, config_home_t, data_home_t, dovecot_spool_t, dovecot_tmp_t, dovecot_var_lib_t, dovecot_var_log_t, dovecot_var_run_t, gconf_home_t, gnome_home_t, httpd_user_content_t, httpd_user_script_exec_t, krb5_host_rcache_t, mail_home_rw_t, mail_spool_t, mozilla_plugin_rw_t, postfix_private_t, telepathy_cache_home_t, telepathy_data_home_t, tmp_t, user_fonts_t, user_home_dir_t, user_home_t, user_tmp_t, var_lib_t, var_log_t, var_run_t, virt_home_t. 
+Puis exécutez : 
+restorecon -v 'truc.com'
+</code></pre>
 <p>Magique, sealert nous donne même la solution à notre problème!</p>
 <h2 id="passage-au-stand">Passage au stand</h2>
 <p>Sur les conseils de sealert, j'ai lancé:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">semanage fcontext -a -t mail_spool_t &quot;/var/vmail(/.*)?&quot;
-</span><span style="color:#f8f8f2;">restorecon -v /var/vmail/
-</span></pre>
+<code>semanage fcontext -a -t mail_spool_t &quot;/var/vmail(/.*)?&quot;
+restorecon -v /var/vmail/
+</code></pre>
 <p>L'objectif de cette commande c'est de dire à SElinux, le répertoire /var/vmail et ses enfants sont de type <strong>mail_spool_t</strong>.
 Dans le jargon SElinux, il s'agit de changer le contexte du répertoire /var/vmail.
 Comme il y a une règle SElinux disant que l'utilisateur imap (dovecot) peut accéder sans souci aux fichiers de type mail_spool_t, on ne devrait plus avoir de problème!</p>
@@ -107,21 +110,21 @@ Comme il y a une règle SElinux disant que l'utilisateur imap (dovecot) peut acc
 <p><strong>restorecon</strong>, c'est pour redonner aux fichiers /var/vmail le bon type SElinux.</p>
 <p>On repasse en mode enforce:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">setenforce 1
-</span></pre>
+<code>setenforce 1
+</code></pre>
 <p>Et tout roule! Ça va, on ne s'est pas trop fatigué.</p>
 <h2 id="les-modules">Les modules</h2>
 <p>Parfois, sealert nous propose de régler le problème avec un &quot;policy package&quot;.
 Il s'agit en gros d'un fichier de règles définissant un comportement autorisé (ou non).</p>
 <p>Ce n'est pas plus compliqué que ce qu'on vient de faire, la démarche est strictement la même et souvent cela se résume à une commande du genre:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">grep &lt;truc&gt; /var/log/audit/audit.log | audit2allow -M mypol
-</span><span style="color:#f8f8f2;">semodule -i mypol.pp
-</span></pre>
+<code>grep &lt;truc&gt; /var/log/audit/audit.log | audit2allow -M mypol
+semodule -i mypol.pp
+</code></pre>
 <p>Le premier souci auquel j'ai du faire face avec SELinux, c'est que dovecot ne pouvait pas se connecter à postgresql.
 En suivant la démarche ci-dessus, on génère un &quot;policy module&quot; (.pp) qui est le résultat de la compilation du fichier &quot;type enforcement&quot; (.te) avec ce contenu:</p>
 <pre style="background-color:#272822;">
-<span style="color:#75715e;"># SElinux rule to allow dovecot to connect to postgres
+<code><span style="color:#75715e;"># SElinux rule to allow dovecot to connect to postgres
 </span><span style="color:#f8f8f2;">module dovecot_postgres 1.0</span><span style="color:#f92672;">;
 
 </span><span style="color:#f8f8f2;">require {
@@ -132,15 +135,15 @@ En suivant la démarche ci-dessus, on génère un &quot;policy module&quot; (.pp
 
 </span><span style="color:#75715e;">#============= dovecot_auth_t ==============
 </span><span style="color:#f8f8f2;">allow dovecot_auth_t postgresql_port_t:tcp_socket name_connect</span><span style="color:#f92672;">;
-</span></pre>
+</span></code></pre>
 <p>Et une fois appliqué, dovecot cause bien avec postgres.</p>
 <p>On peut également avoir envie de déployer un fichier de règle sur plusieurs machines.
 Dans ce cas on ne va pas versionner <em>policy package</em> puisqu'il est compilé, mais sa source: le fichier <em>type enforcement</em> (.te).
 Pour compiler le <em>.te</em> en <em>.pp</em>, on peut faire ça:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;"> checkmodule -M -m -o dovecot_postgres.mod dovecot_postgres.te
-</span><span style="color:#f8f8f2;"> semodule_package -o dovecot_postgres.pp -m dovecot_postgres.mod
-</span></pre>
+<code> checkmodule -M -m -o dovecot_postgres.mod dovecot_postgres.te
+ semodule_package -o dovecot_postgres.pp -m dovecot_postgres.mod
+</code></pre>
 <p>Et enfin on applique avec <code>semodule -i dovecot_postgres.pp</code>.</p>
 <h2 id="les-booleens">Les Booléens</h2>
 <p>Pour les opérations courantes, on peut également passer par des booléens. En gros ça permet de dire &quot;autoriser à faire un truc&quot; → oui/non.
@@ -165,12 +168,6 @@ C'est dommage parce que ça contribue à faire apparaitre SElinux comme une usin
 
     <footer class="mt5 pa3 bg-dark-gray near-white">
       <div class="tc mt3">
-        
-        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
-          <svg fill="currentColor" viewBox="0 0 24 24">
-    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
-          </svg>
-        </a>
         
         <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
           <svg fill="currentColor" viewBox="0 0 24 24">
@@ -214,10 +211,10 @@ C'est dommage parce que ça contribue à faire apparaitre SElinux comme une usin
                      c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
                      C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
                      M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
-		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
-		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
-		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
-		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+                     c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+                     c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+                     C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+                     C446.906,305.083,446.279,307.03,444.766,308.13z"/>
           </svg>
         </a>
       </div>

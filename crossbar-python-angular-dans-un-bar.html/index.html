@@ -4,6 +4,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+    
+<link rel="canonical" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;" />
+<meta http-equiv="refresh" content="0; URL=https:&#x2F;&#x2F;greizgh.eu&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;" />
+
+
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 
     <!-- Enable responsiveness on mobile devices-->
@@ -12,11 +17,9 @@
     <title>Let&#x27;s shuffle bits - C&#x27;est crossbar, python et angular qui rentrent dans un bar...</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;tachyons.min.css">
-    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;style.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;tachyons.min.css">
+    <link rel="stylesheet" href="https:&#x2F;&#x2F;greizgh.eu&#x2F;style.css">
 
-    
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
     
 
     
@@ -36,7 +39,7 @@
 <div class="flex justify-center">
   <article>
     <h1 class="orange lh-title">
-      <a href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;" class="link hover-black">
+      <a href="https:&#x2F;&#x2F;greizgh.eu&#x2F;crossbar-python-angular-dans-un-bar.html&#x2F;" class="link hover-black">
         C&#x27;est crossbar, python et angular qui rentrent dans un bar...
       </a>
     </h1>
@@ -56,7 +59,7 @@ nous poussent à commettre les pires attrocités. Il est bien connu que
 l'Homme est un loup pour l'Homme. Ainsi, dans le but de maintenir une
 atmosphère conviviale et détendue, il est nécessaire de trouver une
 solution.</p>
-<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<span id="continue-reading"></span>
 <p><img src="https://media.giphy.com/media/1WQLKmc1Gfhny/giphy.gif" alt="My turn." /></p>
 <p>En attendant un système de supervision des chiottes en temps réel (on y
 travaille, à base d'<a href="https://www.arduino.cc/">Arduino</a>), un système de
@@ -101,20 +104,20 @@ frontend</li>
 coup on va se créer deux environnements virtuels pour bosser: un pour
 crossbar et un pour notre backend.</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">virtualenv backend_env
+<code><span style="color:#f8f8f2;">virtualenv backend_env
 virtualenv crossbar_env</span><span style="font-style:italic;color:#fd971f;"> -p</span><span style="color:#f8f8f2;"> python2
-</span></pre>
+</span></code></pre>
 <p>Avec <em>crossbar_env</em>, on bootstrap crossbar:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">crossbar init
-</span></pre>
+<code><span style="color:#f8f8f2;">crossbar init
+</span></code></pre>
 <p>Par la suite, dès qu'on touchera à crossbar, on le fera avec
 <em>crossbar_env</em>.</p>
 <p>On va tout de suite configurer crossbar, ça sera fait. Tout se passe
 dans le fichier <em>.crossbar/config.json</em> qui a normalement du être créé
 lors de notre crossbar init:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">{
+<code><span style="color:#f8f8f2;">{
    </span><span style="color:#e6db74;">&quot;controller&quot;</span><span style="color:#f8f8f2;">: {
    },
    </span><span style="color:#e6db74;">&quot;workers&quot;</span><span style="color:#f8f8f2;">: [
@@ -160,7 +163,7 @@ lors de notre crossbar init:</p>
       }
    ]
 }
-</span></pre>
+</span></code></pre>
 <p>Le <em>realm</em> défini ligne 9 représente le contexte de notre application.
 Il est tout à fait possible d'avoir plusieurs <em>realms</em> sur un même
 serveur, tout en garantissant un cloisonnement entre les contextes
@@ -181,8 +184,8 @@ bosser avec asyncio mais il est également possible de jouer avec twisted
 (cf <a href="http://autobahn.ws/python/installation.html#installing-autobahn">la
 doc</a>):</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">pip install </span><span style="color:#e6db74;">&quot;autobahn[asyncio]&quot;
-</span></pre>
+<code><span style="color:#f8f8f2;">pip install </span><span style="color:#e6db74;">&quot;autobahn[asyncio]&quot;
+</span></code></pre>
 <p>Il ne nous reste plus qu'à écrire notre composant <em>SeatComponent</em>. Rien
 de bien compliqué, on va conserver l'état de la ressource sous forme de
 booléen: vrai si c'est libre, faux sinon. Il nous faut également
@@ -203,28 +206,28 @@ aura deux messages: <strong>locked</strong> et <strong>unlocked</strong>.</p>
 autobahn</a>,
 notre composant ressemble à ça:</p>
 <pre style="background-color:#272822;">
-<span style="color:#75715e;">#!/usr/bin/env python
+<code><span style="color:#75715e;">#!/usr/bin/env python
 </span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">asyncio </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">coroutine
 </span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">autobahn.asyncio.wamp </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">ApplicationSession, ApplicationRunner
 </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">uuid
 
 
-</span><span style="font-style:italic;color:#66d9ef;">class </span><span style="text-decoration:underline;color:#a6e22e;">SeatComponent</span><span style="color:#f8f8f2;">(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">ApplicationSession</span><span style="color:#f8f8f2;">):
+</span><span style="font-style:italic;color:#f92672;">class </span><span style="text-decoration:underline;color:#a6e22e;">SeatComponent</span><span style="color:#f8f8f2;">(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">ApplicationSession</span><span style="color:#f8f8f2;">):
     _free </span><span style="color:#f92672;">= </span><span style="color:#ae81ff;">True
     </span><span style="color:#f8f8f2;">_locker_id </span><span style="color:#f92672;">= </span><span style="color:#e6db74;">&quot;&quot;
 
-    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">get_id</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">):
+    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">get_id</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">):
         </span><span style="color:#75715e;">&quot;&quot;&quot;Get unique identifier&quot;&quot;&quot;
         </span><span style="color:#f92672;">return </span><span style="font-style:italic;color:#66d9ef;">str</span><span style="color:#f8f8f2;">(uuid.uuid4())
 
-    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">refresh</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">):
+    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">refresh</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">):
         </span><span style="color:#75715e;">&quot;&quot;&quot;Send lock/unlock events according to current seat state&quot;&quot;&quot;
         </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">self._free:
             self.publish(</span><span style="color:#e6db74;">&#39;lockr.seat.unlocked&#39;</span><span style="color:#f8f8f2;">, self._locker_id)
         </span><span style="color:#f92672;">else</span><span style="color:#f8f8f2;">:
             self.publish(</span><span style="color:#e6db74;">&#39;lockr.seat.locked&#39;</span><span style="color:#f8f8f2;">, self._locker_id)
 
-    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">lock</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">client</span><span style="color:#f8f8f2;">):
+    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">lock</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">client</span><span style="color:#f8f8f2;">):
         </span><span style="color:#75715e;">&quot;&quot;&quot;Lock the resource
 
         Returns True if successfully locked, False otherwise
@@ -237,7 +240,7 @@ notre composant ressemble à ça:</p>
             </span><span style="color:#f8f8f2;">self.refresh()
             </span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">True
 
-    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">unlock</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">client</span><span style="color:#f8f8f2;">):
+    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">unlock</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">client</span><span style="color:#f8f8f2;">):
         </span><span style="color:#75715e;">&quot;&quot;&quot;Release the resource
 
         Returns True if successfully released, False otherwise
@@ -250,7 +253,7 @@ notre composant ressemble à ça:</p>
             </span><span style="color:#f92672;">return </span><span style="color:#ae81ff;">False
 
     </span><span style="color:#f8f8f2;">@coroutine
-    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">onJoin</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">details</span><span style="color:#f8f8f2;">):
+    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">onJoin</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">details</span><span style="color:#f8f8f2;">):
         </span><span style="color:#f92672;">try</span><span style="color:#f8f8f2;">:
             </span><span style="color:#f92672;">yield from </span><span style="color:#f8f8f2;">self.register(self.get_id, </span><span style="color:#e6db74;">&#39;lockr.seat.get_id&#39;</span><span style="color:#f8f8f2;">)
             </span><span style="color:#f92672;">yield from </span><span style="color:#f8f8f2;">self.register(self.lock, </span><span style="color:#e6db74;">&#39;lockr.seat.lock&#39;</span><span style="color:#f8f8f2;">)
@@ -262,7 +265,7 @@ notre composant ressemble à ça:</p>
 </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">__name__ </span><span style="color:#f92672;">== </span><span style="color:#e6db74;">&#39;__main__&#39;</span><span style="color:#f8f8f2;">:
     runner </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">ApplicationRunner(</span><span style="font-style:italic;color:#fd971f;">url</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;ws://localhost:8080/ws&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">realm</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;lockr&#39;</span><span style="color:#f8f8f2;">)
     runner.run(SeatComponent)
-</span></pre>
+</span></code></pre>
 <p>Qu'est-ce qu'on a fait ici? On a défini notre composant
 <em>SeatComponent</em>, muni de méthodes pour agir sur la ressource. Ces
 méthodes sont exposées en RPC dans la méthode appelée lors de la
@@ -277,14 +280,14 @@ méthode <em>refresh</em> qui sera appelée à la réception d'un événement
 vérifier qu'on ne s'est pas planté.</p>
 <p>Hop, hop, un petit composant de test:</p>
 <pre style="background-color:#272822;">
-<span style="color:#75715e;">#!/usr/bin/env python
+<code><span style="color:#75715e;">#!/usr/bin/env python
 </span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">autobahn.asyncio.wamp </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">ApplicationSession, ApplicationRunner
 </span><span style="color:#f92672;">from </span><span style="color:#f8f8f2;">asyncio </span><span style="color:#f92672;">import </span><span style="color:#f8f8f2;">coroutine
 
 
-</span><span style="font-style:italic;color:#66d9ef;">class </span><span style="text-decoration:underline;color:#a6e22e;">TestComponent</span><span style="color:#f8f8f2;">(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">ApplicationSession</span><span style="color:#f8f8f2;">):
+</span><span style="font-style:italic;color:#f92672;">class </span><span style="text-decoration:underline;color:#a6e22e;">TestComponent</span><span style="color:#f8f8f2;">(</span><span style="text-decoration:underline;font-style:italic;color:#a6e22e;">ApplicationSession</span><span style="color:#f8f8f2;">):
     @coroutine
-    </span><span style="font-style:italic;color:#66d9ef;">def </span><span style="color:#a6e22e;">onJoin</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">details</span><span style="color:#f8f8f2;">):
+    </span><span style="font-style:italic;color:#f92672;">def </span><span style="color:#a6e22e;">onJoin</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">self</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">details</span><span style="color:#f8f8f2;">):
         </span><span style="color:#66d9ef;">print</span><span style="color:#f8f8f2;">(</span><span style="color:#e6db74;">&quot;session ready&quot;</span><span style="color:#f8f8f2;">)
 
         </span><span style="color:#f92672;">try</span><span style="color:#f8f8f2;">:
@@ -297,13 +300,13 @@ vérifier qu'on ne s'est pas planté.</p>
 </span><span style="color:#f92672;">if </span><span style="color:#f8f8f2;">__name__ </span><span style="color:#f92672;">== </span><span style="color:#e6db74;">&#39;__main__&#39;</span><span style="color:#f8f8f2;">:
     runner </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">ApplicationRunner(</span><span style="font-style:italic;color:#fd971f;">url</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;ws://localhost:8080/ws&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">realm</span><span style="color:#f92672;">=</span><span style="color:#e6db74;">&#39;lockr&#39;</span><span style="color:#f8f8f2;">)
     runner.run(TestComponent)
-</span></pre>
+</span></code></pre>
 <p>Normalement en lançant le serveur et le test, on devrait obtenir un truc
 comme ça:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">session ready
+<code><span style="color:#f8f8f2;">session ready
 call result: b654c12f-e036-418e-ae81-70be2b10258a
-</span></pre>
+</span></code></pre>
 <p>Comme sur des roulettes, on peut passer à la partie front pour afficher
 un joli bouton.</p>
 <h2 id="frontend">Frontend</h2>
@@ -312,9 +315,9 @@ conf crossbar? Ben c'est là-dedans qu'on va se mettre.</p>
 <p>Comme on est pas des gros sales, on va gérer nos dépendances avec
 <a href="http://bower.io/">bower</a>:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">bower init
+<code><span style="color:#f8f8f2;">bower init
 bower install angular angular-wamp bootstrap --save
-</span></pre>
+</span></code></pre>
 <p>On installe donc <a href="https://angular.io/">angular</a>, angular-wamp et
 bootstrap. On pourrait utiliser directement autobahnjs, mais puisque
 <a href="https://github.com/voryx/angular-wamp">angular-wamp</a> nous offre un
@@ -324,7 +327,7 @@ bouton c'est bien nécessaire. Enfin il faut avouer que je suis une
 quiche en design...</p>
 <p>On se créer un <em>index.html</em> de base:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">&lt;!</span><span style="color:#f92672;">DOCTYPE</span><span style="color:#f8f8f2;"> html&gt;
+<code><span style="color:#f8f8f2;">&lt;!</span><span style="color:#f92672;">DOCTYPE </span><span style="color:#ae81ff;">html</span><span style="color:#f8f8f2;">&gt;
 &lt;</span><span style="color:#f92672;">html </span><span style="color:#a6e22e;">lang</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;en&quot;</span><span style="color:#f8f8f2;">&gt;
     &lt;</span><span style="color:#f92672;">head</span><span style="color:#f8f8f2;">&gt;
         &lt;</span><span style="color:#f92672;">meta </span><span style="color:#a6e22e;">charset</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;UTF-8&quot;</span><span style="color:#f8f8f2;">&gt;
@@ -344,27 +347,27 @@ quiche en design...</p>
         &lt;</span><span style="color:#f92672;">script </span><span style="color:#a6e22e;">src</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;app.js&quot;</span><span style="color:#f8f8f2;">&gt;&lt;/</span><span style="color:#f92672;">script</span><span style="color:#f8f8f2;">&gt;
     &lt;/</span><span style="color:#f92672;">body</span><span style="color:#f8f8f2;">&gt;
 &lt;/</span><span style="color:#f92672;">html</span><span style="color:#f8f8f2;">&gt;
-</span></pre>
+</span></code></pre>
 <p>Outre les dépendances, on appelle <em>style.css</em> pour mettre le bouton en
 taille maxi et <em>app.js</em> qui contiendra notre appli angular.</p>
 <p>Déclarons notre application:</p>
 <pre style="background-color:#272822;">
-<span style="font-style:italic;color:#66d9ef;">var </span><span style="color:#f8f8f2;">app </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">angular.module(</span><span style="color:#e6db74;">&#39;LockrWebApp&#39;</span><span style="color:#f8f8f2;">, [</span><span style="color:#e6db74;">&#39;vxWamp&#39;</span><span style="color:#f8f8f2;">]);
-</span></pre>
+<code><span style="font-style:italic;color:#66d9ef;">var </span><span style="color:#f8f8f2;">app </span><span style="color:#f92672;">= </span><span style="color:#f8f8f2;">angular.module(</span><span style="color:#e6db74;">&#39;LockrWebApp&#39;</span><span style="color:#f8f8f2;">, [</span><span style="color:#e6db74;">&#39;vxWamp&#39;</span><span style="color:#f8f8f2;">]);
+</span></code></pre>
 <p>Une unique dépendance: angular-wamp, qu'on s'empresse de configurer:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">app.config([</span><span style="color:#e6db74;">&#39;$wampProvider&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$wampProvider</span><span style="color:#f8f8f2;">) {
+<code><span style="color:#f8f8f2;">app.config([</span><span style="color:#e6db74;">&#39;$wampProvider&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$wampProvider</span><span style="color:#f8f8f2;">) {
   $wampProvider.init({
     url: </span><span style="color:#e6db74;">&#39;ws://localhost:8080/ws&#39;</span><span style="color:#f8f8f2;">,
     realm: </span><span style="color:#e6db74;">&#39;lockr&#39;
   </span><span style="color:#f8f8f2;">});
 }]);
-</span></pre>
+</span></code></pre>
 <p>On précise le realm et l'url qu'on avait configuré dans
 .crossbar/config.json.</p>
 <p>Reste plus qu'à écrire notre contrôleur:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">app.controller(</span><span style="color:#e6db74;">&#39;MainCtrl&#39;</span><span style="color:#f8f8f2;">, [</span><span style="color:#e6db74;">&#39;$scope&#39;</span><span style="color:#f8f8f2;">, </span><span style="color:#e6db74;">&#39;$wamp&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$scope</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">$wamp</span><span style="color:#f8f8f2;">) {
+<code><span style="color:#f8f8f2;">app.controller(</span><span style="color:#e6db74;">&#39;MainCtrl&#39;</span><span style="color:#f8f8f2;">, [</span><span style="color:#e6db74;">&#39;$scope&#39;</span><span style="color:#f8f8f2;">, </span><span style="color:#e6db74;">&#39;$wamp&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$scope</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#fd971f;">$wamp</span><span style="color:#f8f8f2;">) {
 
   </span><span style="color:#75715e;">// C&#39;est l&#39;identifiant du client
   </span><span style="font-style:italic;color:#66d9ef;">var </span><span style="color:#f8f8f2;">uuid;
@@ -437,11 +440,11 @@ taille maxi et <em>app.js</em> qui contiendra notre appli angular.</p>
     }
   };
 }]);
-</span></pre>
+</span></code></pre>
 <p>Il ne nous reste plus qu'à ajouter quelques éléments dans notre
 <em>index.html</em>:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">body </span><span style="color:#a6e22e;">ng-app</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;LockrWebApp&quot; </span><span style="color:#a6e22e;">ng-controller</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;MainCtrl&quot;</span><span style="color:#f8f8f2;">&gt;
+<code><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">body </span><span style="color:#a6e22e;">ng-app</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;LockrWebApp&quot; </span><span style="color:#a6e22e;">ng-controller</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;MainCtrl&quot;</span><span style="color:#f8f8f2;">&gt;
 
     </span><span style="color:#75715e;">&lt;!-- Un bloc pour afficher les erreurs --&gt;
     </span><span style="color:#f8f8f2;">&lt;</span><span style="color:#f92672;">div </span><span style="color:#a6e22e;">class</span><span style="color:#f8f8f2;">=</span><span style="color:#e6db74;">&quot;container&quot;</span><span style="color:#f8f8f2;">&gt;
@@ -460,16 +463,16 @@ taille maxi et <em>app.js</em> qui contiendra notre appli angular.</p>
     </span><span style="color:#75715e;">&lt;!-- Les scripts qui vont bien --&gt;</span><span style="color:#f8f8f2;">
     [...]
 &lt;/</span><span style="color:#f92672;">body</span><span style="color:#f8f8f2;">&gt;
-</span></pre>
+</span></code></pre>
 <p>Et si on teste maintenant, qu'est-ce qui se passe? Rien.</p>
 <p><img src="https://media.giphy.com/media/3uyIgVxP1qAjS/giphy.gif" alt="Ça marche pas..." /></p>
 <p>Il nous manque une étape: la connexion à crossbar. Ça se passe dans
 <em>app.js</em>, où on ajoute:</p>
 <pre style="background-color:#272822;">
-<span style="color:#f8f8f2;">app.run([</span><span style="color:#e6db74;">&#39;$wamp&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$wamp</span><span style="color:#f8f8f2;">) {
-  $wamp.</span><span style="color:#66d9ef;">open</span><span style="color:#f8f8f2;">();
+<code><span style="color:#f8f8f2;">app.run([</span><span style="color:#e6db74;">&#39;$wamp&#39;</span><span style="color:#f8f8f2;">, </span><span style="font-style:italic;color:#66d9ef;">function</span><span style="color:#f8f8f2;">(</span><span style="font-style:italic;color:#fd971f;">$wamp</span><span style="color:#f8f8f2;">) {
+  $wamp.open();
 }
-</span></pre>
+</span></code></pre>
 <p>La doc d'<a href="https://github.com/voryx/angular-wamp">angular-wamp</a> préciser
 qu'on pourrait ouvrir la connexion de n'importe où. N'importe où y
 compris au démarrage de l'application.</p>
@@ -530,12 +533,6 @@ sont listés sur la page d'<a href="http://autobahn.ws/">autobahn</a>.</p>
     <footer class="mt5 pa3 bg-dark-gray near-white">
       <div class="tc mt3">
         
-        <a class="link black hover-silver dib h2 w2" href="https:&#x2F;&#x2F;greizgh.github.io&#x2F;rss.xml">
-          <svg fill="currentColor" viewBox="0 0 24 24">
-    <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M7.5,15A1.5,1.5 0 0,0 6,16.5A1.5,1.5 0 0,0 7.5,18A1.5,1.5 0 0,0 9,16.5A1.5,1.5 0 0,0 7.5,15M6,10V12A6,6 0 0,1 12,18H14A8,8 0 0,0 6,10M6,6V8A10,10 0 0,1 16,18H18A12,12 0 0,0 6,6Z" />
-          </svg>
-        </a>
-        
         <a class="link black hover-silver dib h2 w2" href="https://github.com/greizgh" title="GitHub">
           <svg fill="currentColor" viewBox="0 0 24 24">
     <path d="M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H14.56C14.24,20.93 14.23,20.32 14.23,20.11L14.24,17.64C14.24,16.8 13.95,16.25 13.63,15.97C15.64,15.75 17.74,15 17.74,11.53C17.74,10.55 17.39,9.74 16.82,9.11C16.91,8.89 17.22,7.97 16.73,6.73C16.73,6.73 15.97,6.5 14.25,7.66C13.53,7.46 12.77,7.36 12,7.35C11.24,7.36 10.46,7.46 9.75,7.66C8.03,6.5 7.27,6.73 7.27,6.73C6.78,7.97 7.09,8.89 7.18,9.11C6.61,9.74 6.26,10.55 6.26,11.53C6.26,15 8.36,15.75 10.36,16C10.1,16.2 9.87,16.6 9.79,17.18C9.27,17.41 7.97,17.81 7.17,16.43C7.17,16.43 6.69,15.57 5.79,15.5C5.79,15.5 4.91,15.5 5.73,16.05C5.73,16.05 6.32,16.33 6.73,17.37C6.73,17.37 7.25,19.12 9.76,18.58L9.77,20.11C9.77,20.32 9.75,20.93 9.43,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z" />
@@ -578,10 +575,10 @@ sont listés sur la page d'<a href="http://autobahn.ws/">autobahn</a>.</p>
                      c0.229,0.219,0.47,0.425,0.722,0.615c0.003,0.002,0.005,0.005,0.008,0.007c0.012,0.009,0.022,0.02,0.034,0.03
                      C288.193,434.591,288.121,434.543,288.053,434.489z M293.028,402.392l-25.665-79.059l-22.766-70.131h96.933L293.028,402.392z
                      M298.281,434.241c-0.06,0.052-0.118,0.104-0.179,0.154c-0.007,0.006-0.014,0.013-0.021,0.019c-0.031,0.025-0.06,0.052-0.09,0.077
-		             c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
-		             c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
-		             C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
-		             C446.906,305.083,446.279,307.03,444.766,308.13z"/>
+                     c-0.066,0.053-0.138,0.101-0.207,0.152c0.012-0.009,0.022-0.021,0.035-0.029c0.002-0.002,0.004-0.004,0.006-0.006
+                     c0.252-0.19,0.492-0.394,0.719-0.613c0.009-0.009,0.02-0.016,0.029-0.024c0.012-0.011,0.025-0.02,0.036-0.031
+                     C298.503,434.043,298.392,434.143,298.281,434.241z M444.766,308.13l-110.557,80.317l98.703-126.467l13.412,41.307
+                     C446.906,305.083,446.279,307.03,444.766,308.13z"/>
           </svg>
         </a>
       </div>
